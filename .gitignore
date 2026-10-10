@@ -1,0 +1,22 @@
+﻿# OS & Editor
+.agents/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Logs & Temporary
+logs/*.log
+*.log
+scratch/
+scratch_*
+
+# Backups & Archives
+backups/*.zip
+backups/*.sql
+*.zip
+*.tar.gz
+
+# Composer
+composer.phar
+vendor/

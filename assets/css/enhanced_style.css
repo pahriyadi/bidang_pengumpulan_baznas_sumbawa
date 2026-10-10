@@ -1,0 +1,598 @@
+/* Gaya kustom terpusat untuk SIM Penyaluran BAZNAS Kabupaten Sumbawa */
+/* BAZNAS Green Theme - Modern & Professional */
+
+:root {
+    --baznas-green: #006937;
+    --baznas-green-light: #0b7c44;
+    --baznas-green-dark: #004d28;
+    --soft-bg: #eef5f1;
+    --card-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    --card-shadow-hover: 0 12px 28px rgba(0, 105, 55, 0.15);
+    --transition-smooth: all 0.3s ease;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: var(--soft-bg);
+}
+
+/* Header & Navigation */
+.main-header.navbar {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    border-bottom: none;
+    box-shadow: 0 4px 12px rgba(0, 105, 55, 0.3);
+}
+
+.main-header .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: var(--transition-smooth);
+}
+
+.main-header .navbar-nav .nav-link:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+}
+
+/* Sidebar */
+.main-sidebar {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active {
+    background-color: var(--baznas-green) !important;
+    color: #fff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link:hover {
+    background-color: var(--baznas-green-light) !important;
+    color: #fff !important;
+}
+
+/* Cards */
+.card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+}
+
+.card:hover {
+    box-shadow: var(--card-shadow-hover);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 105, 55, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, var(--baznas-green-dark) 0%, var(--baznas-green) 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 105, 55, 0.4);
+}
+
+.btn-success {
+    background-color: #0a9396 !important;
+    border-color: #0a9396 !important;
+}
+
+.btn-success:hover {
+    background-color: #087f82 !important;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background-color: #ae2012 !important;
+    border-color: #ae2012 !important;
+}
+
+.btn-danger:hover {
+    background-color: #8a1a0e !important;
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background-color: #ee9b00 !important;
+    border-color: #ee9b00 !important;
+    color: #fff !important;
+}
+
+.btn-warning:hover {
+    background-color: #d18800 !important;
+    transform: translateY(-2px);
+}
+
+/* Small Boxes (Info Boxes) */
+.small-box {
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+}
+
+.small-box:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--card-shadow-hover);
+}
+
+.small-box.bg-primary {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+}
+
+.small-box.bg-success {
+    background: linear-gradient(135deg, #0a9396 0%, #0cb3b7 100%) !important;
+}
+
+.small-box.bg-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c9e0 100%) !important;
+}
+
+.small-box.bg-warning {
+    background: linear-gradient(135deg, #ee9b00 0%, #ffb020 100%) !important;
+}
+
+.small-box.bg-danger {
+    background: linear-gradient(135deg, #ae2012 0%, #d42818 100%) !important;
+}
+
+.small-box.bg-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #868e96 100%) !important;
+}
+
+.small-box.bg-dark {
+    background: linear-gradient(135deg, #343a40 0%, #495057 100%) !important;
+}
+
+.small-box.bg-light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%) !important;
+}
+
+/* Forms */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #d0d7de;
+    transition: var(--transition-smooth);
+}
+
+.form-control:focus {
+    border-color: var(--baznas-green);
+    box-shadow: 0 0 0 0.2rem rgba(0, 105, 55, 0.25);
+}
+
+/* Tables */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%);
+    color: #fff;
+    font-weight: 600;
+    border: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 105, 55, 0.05);
+}
+
+/* Badges */
+.badge {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.35em 0.65em;
+    border-radius: 6px;
+}
+
+.badge-primary {
+    background-color: var(--baznas-green) !important;
+}
+
+/* DataTables */
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    border: 1px solid #d0d7de;
+    transition: var(--transition-smooth);
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--baznas-green);
+    box-shadow: 0 0 0 0.2rem rgba(0, 105, 55, 0.25);
+}
+
+.dataTables_wrapper .dataTables_length select {
+    border-radius: 8px;
+    border: 1px solid #d0d7de;
+}
+
+/* Modals */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%);
+    color: #fff;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header .close {
+    color: #fff;
+    opacity: 0.8;
+}
+
+.modal-header .close:hover {
+    opacity: 1;
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+    border: none;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    background-color: transparent;
+    border-radius: 8px;
+}
+
+.breadcrumb-item.active {
+    color: var(--baznas-green);
+}
+
+/* Login Page Specific */
+.login-page {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%);
+}
+
+.login-box .card {
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.login-box .card-header {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%);
+    color: #fff;
+    border-radius: 16px 16px 0 0 !important;
+}
+
+.login-box .card-header a {
+    color: #fff !important;
+}
+
+.login-box .card-header a:hover {
+    color: #F4C10F !important;
+}
+
+.login-box .btn-primary {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    border: none;
+}
+
+.login-box .btn-primary:hover {
+    background: linear-gradient(135deg, var(--baznas-green-dark) 0%, var(--baznas-green) 100%) !important;
+    transform: translateY(-2px);
+}
+
+/* Content Header */
+.content-header h1 {
+    color: var(--baznas-green);
+    font-weight: 700;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .small-box {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background-color: #ffffff;
+    }
+
+    .main-sidebar,
+    .main-header,
+    .main-footer {
+        display: none !important;
+    }
+
+    .content-wrapper {
+        margin-left: 0 !important;
+        padding: 2rem;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Additional Enhancements */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+}
+
+.text-primary {
+    color: var(--baznas-green) !important;
+}
+
+a {
+    color: var(--baznas-green);
+    transition: var(--transition-smooth);
+}
+
+a:hover {
+    color: var(--baznas-green-light);
+}
+
+/* Smooth Transitions for Interactive Elements */
+.nav-link,
+.dropdown-item,
+.page-link {
+    transition: var(--transition-smooth);
+}
+
+/* ========================================
+   SIDEBAR - White & BAZNAS Green Theme
+   ======================================== */
+
+/* Sidebar Base - White Background */
+.main-sidebar {
+    background: #ffffff !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Brand Link - BAZNAS Green */
+.brand-link {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    border-bottom: 1px solid #e8f5e9;
+}
+
+.brand-link:hover {
+    background: linear-gradient(135deg, var(--baznas-green-light) 0%, var(--baznas-green) 100%) !important;
+}
+
+.brand-link .brand-text {
+    color: #fff !important;
+    font-weight: 600 !important;
+}
+
+/* User Panel */
+.user-panel {
+    border-bottom: 1px solid #e8f5e9;
+}
+
+.user-panel .info a {
+    color: var(--baznas-green) !important;
+    font-weight: 600;
+}
+
+.user-panel .info small {
+    color: #666;
+}
+
+/* Navigation Headers */
+.nav-sidebar .nav-header {
+    color: var(--baznas-green) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem !important;
+}
+
+/* Navigation Links - Main Menu */
+.nav-sidebar>.nav-item>.nav-link {
+    color: #495057 !important;
+}
+
+.nav-sidebar>.nav-item>.nav-link:hover {
+    background: #e8f5e9 !important;
+    color: var(--baznas-green) !important;
+}
+
+/* Active State - Main Menu */
+.nav-sidebar>.nav-item>.nav-link.active {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    color: #fff !important;
+}
+
+/* Treeview - Submenu Container */
+.nav-treeview {
+    background: #f8f9fa;
+}
+
+/* Treeview Links - Submenu Items */
+.nav-treeview>.nav-item>.nav-link {
+    padding-left: 3rem;
+    color: #495057 !important;
+}
+
+.nav-treeview>.nav-item>.nav-link:hover {
+    background: rgba(0, 105, 55, 0.08) !important;
+    color: var(--baznas-green) !important;
+}
+
+.nav-treeview>.nav-item>.nav-link.active {
+    background: rgba(0, 105, 55, 0.15) !important;
+    color: var(--baznas-green) !important;
+    font-weight: 600;
+}
+
+/* Override AdminLTE Dark Sidebar Defaults */
+.sidebar-dark-primary {
+    background: #ffffff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link {
+    color: #495057 !important;
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link:hover {
+    background: #e8f5e9 !important;
+    color: var(--baznas-green) !important;
+}
+
+.sidebar-dark-primary .nav-sidebar>.nav-item>.nav-link.active {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%) !important;
+    color: #fff !important;
+}
+
+/* Override AdminLTE Treeview Defaults */
+.sidebar-dark-primary .nav-treeview>.nav-item>.nav-link {
+    color: #495057 !important;
+}
+
+.sidebar-dark-primary .nav-treeview>.nav-item>.nav-link:hover {
+    background: rgba(0, 105, 55, 0.08) !important;
+    color: var(--baznas-green) !important;
+}
+
+.sidebar-dark-primary .nav-treeview>.nav-item>.nav-link.active {
+    background: rgba(0, 105, 55, 0.15) !important;
+    color: var(--baznas-green) !important;
+    font-weight: 600;
+}
+
+/* ========================================
+   LOGIN PAGE ENHANCEMENTS
+   ======================================== */
+
+.login-page {
+    background: linear-gradient(135deg, #006937 0%, #0b7c44 100%) !important;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-box {
+    width: 400px;
+    margin: 0;
+}
+
+.login-box .card {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: fadeInDown 0.8s ease;
+}
+
+.login-box .card-header {
+    background: #ffffff;
+    border-bottom: 2px solid #eef5f1;
+    padding: 2rem 1rem;
+}
+
+.login-box .card-header a {
+    color: var(--baznas-green) !important;
+    font-size: 2rem;
+}
+
+.login-box .card-body {
+    padding: 2rem;
+}
+
+.login-box .login-box-msg {
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.login-box .input-group .form-control {
+    border-radius: 8px 0 0 8px;
+    border: 1.5px solid #ced4da;
+    height: 45px;
+}
+
+.login-box .input-group .form-control:focus {
+    border-color: var(--baznas-green);
+    box-shadow: 0 0 0 0.2rem rgba(0, 105, 55, 0.1);
+}
+
+.login-box .input-group .input-group-text {
+    border-radius: 0 8px 8px 0;
+    border: 1.5px solid #ced4da;
+    border-left: none;
+    background: #f8f9fa;
+    color: var(--baznas-green);
+    width: 45px;
+    justify-content: center;
+}
+
+.login-box .btn-primary {
+    background: linear-gradient(135deg, var(--baznas-green) 0%, var(--baznas-green-light) 100%);
+    border: none;
+    height: 45px;
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.login-box .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 105, 55, 0.3);
+    background: linear-gradient(135deg, var(--baznas-green-light) 0%, var(--baznas-green) 100%);
+}
+
+.login-box .btn-primary:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Login Box */
+@media (max-width: 480px) {
+    .login-box {
+        width: 90%;
+    }
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .main-sidebar {
+        margin-left: -250px;
+    }
+
+    .sidebar-open .main-sidebar {
+        margin-left: 0;
+    }
+}

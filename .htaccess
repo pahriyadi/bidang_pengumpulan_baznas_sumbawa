@@ -1,0 +1,29 @@
+# Hilangkan ekstensi .php dari URL
+# Jangan tambahkan "Options" di sini — tanpa AllowOverride Options Apache bisa balas 403.
+
+DirectoryIndex index.php
+
+# --- PENGUATAN KEAMANAN WEB (SECURITY HEADERS) ---
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(self), camera=(self)"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Beranda (path kosong) → index.php
+    RewriteRule ^$ index.php [L]
+
+    # File atau folder yang sudah ada secara fisik — biarkan web server layani langsung
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # /nama → nama.php jika filenya ada di direktori
+    RewriteCond %{REQUEST_FILENAME}.php -f
+    RewriteRule ^(.*)$ $1.php [L,QSA]
+</IfModule>

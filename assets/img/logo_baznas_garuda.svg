@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" width="100%" height="100%">
+  <!-- Lambang Garuda Emas BAZNAS -->
+  <g transform="translate(140, 5) scale(0.6)">
+    <!-- Sayap Kiri -->
+    <path d="M70,75 C45,55 20,40 5,20 C15,45 30,65 50,85 C25,75 5,65 -15,50 C0,75 20,95 45,110 C20,105 0,100 -20,90 C0,115 25,130 50,140 C30,140 10,140 -10,135 C15,155 45,165 75,170 Z" fill="#D4AF37" stroke="#996515" stroke-width="1.5"/>
+    <!-- Sayap Kanan -->
+    <path d="M130,75 C155,55 180,40 195,20 C185,45 170,65 150,85 C175,75 195,65 215,50 C200,75 180,95 155,110 C180,105 200,100 220,90 C200,115 175,130 150,140 C170,140 190,140 210,135 C185,155 155,165 125,170 Z" fill="#D4AF37" stroke="#996515" stroke-width="1.5"/>
+    <!-- Ekor -->
+    <path d="M85,170 L85,210 C92,205 100,205 100,215 C100,205 108,205 115,210 L115,170 Z" fill="#D4AF37" stroke="#996515" stroke-width="1.5"/>
+    <!-- Tubuh & Kepala -->
+    <path d="M100,25 C92,25 88,32 90,40 C85,42 82,48 85,55 C82,60 82,70 85,80 L88,150 C92,165 108,165 112,150 L115,80 C118,70 118,60 115,55 C118,48 115,42 110,40 C112,32 108,25 100,25 Z" fill="#D4AF37" stroke="#996515" stroke-width="1.5"/>
+    <!-- Jambul Kepala Menghadap Kanan -->
+    <path d="M100,25 C105,18 115,18 120,24 C115,26 112,30 110,35 C106,32 103,28 100,25 Z" fill="#D4AF37" stroke="#996515" stroke-width="1.5"/>
+    <!-- Perisai Dada -->
+    <path d="M80,85 C80,130 100,150 100,150 C100,150 120,130 120,85 L80,85 Z" fill="#C0392B" stroke="#996515" stroke-width="2"/>
+    <path d="M100,85 L100,150" stroke="#F1C40F" stroke-width="2"/>
+    <path d="M80,110 L120,110" stroke="#F1C40F" stroke-width="2"/>
+    <!-- Pita Bhinneka Tunggal Ika -->
+    <path d="M60,195 Q100,185 140,195 L145,205 Q100,195 55,205 Z" fill="#FFFFFF" stroke="#996515" stroke-width="1"/>
+  </g>
+  
+  <!-- Teks BAZNAS -->
+  <text x="200" y="155" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="28" font-weight="900" fill="#0d9f4f" letter-spacing="3">BAZNAS</text>
+  
+  <!-- Teks Badan Amil Zakat Nasional -->
+  <text x="200" y="178" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#222222" letter-spacing="0.5">Badan Amil Zakat Nasional</text>
+  
+  <!-- Teks KABUPATEN SUMBAWA -->
+  <text x="200" y="198" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#111111" letter-spacing="1">KABUPATEN SUMBAWA</text>
+</svg>
