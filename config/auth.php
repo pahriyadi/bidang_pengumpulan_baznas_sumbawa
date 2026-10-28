@@ -200,18 +200,34 @@ function verify_google_id_token(string $idToken, string $expectedClientId, strin
     $response = false;
     $httpCode = 0;
 
+    $host = strtolower($_SERVER['HTTP_HOST'] ?? 'localhost');
+    $isLocalhost = ($host === 'localhost' || strpos($host, '127.0.0.1') === 0 || strpos($host, 'localhost:') === 0);
+
     if (function_exists('curl_init')) {
         $ch = curl_init($verifyUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         $response = curl_exec($ch);
+        $curlErrno = curl_errno($ch);
         $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
+        // Fallback khusus lingkungan XAMPP lokal Windows yang belum memiliki bundle cacert.pem
+        if (($response === false || $curlErrno === 60 || $curlErrno === 77) && $isLocalhost) {
+            $ch = curl_init($verifyUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $response = curl_exec($ch);
+            $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+        }
     } else {
         $ctx = stream_context_create([
             'http' => ['timeout' => 10, 'ignore_errors' => true],
-            'ssl'  => ['verify_peer' => false, 'verify_peer_name' => false]
+            'ssl'  => ['verify_peer' => !$isLocalhost, 'verify_peer_name' => !$isLocalhost]
         ]);
         $response = @file_get_contents($verifyUrl, false, $ctx);
         $httpCode = $response !== false ? 200 : 0;
@@ -266,6 +282,9 @@ function verify_google_id_token(string $idToken, string $expectedClientId, strin
 function login_user(array $user): void
 {
     ensure_session_started();
+    if (!headers_sent() && session_status() === PHP_SESSION_ACTIVE) {
+        @session_regenerate_id(true);
+    }
     $sessId = session_id();
     $_SESSION['user'] = [
         'id'        => $user['id'],
