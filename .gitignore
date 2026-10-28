@@ -1,4 +1,4 @@
-﻿# OS & Editor
+# OS & Editor
 .agents/
 .vscode/
 .idea/
@@ -16,6 +16,7 @@ backups/*.zip
 backups/*.sql
 *.zip
 *.tar.gz
+config/last_auto_backup.txt
 
 # Composer
 composer.phar
