@@ -15,6 +15,8 @@ if (is_authenticated()) {
 $googleLoginEnabled = get_setting('google_login_enabled', '0') === '1';
 $googleClientId = trim(get_setting('google_client_id', ''));
 $isGoogleAuthActive = $googleLoginEnabled && $googleClientId !== '';
+$googleLoginMode = $isGoogleAuthActive ? get_setting('google_login_mode', 'both') : 'both';
+$hideManualFormByDefault = ($isGoogleAuthActive && $googleLoginMode === 'google_only' && ($_POST['auth_type'] ?? '') !== 'password');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = $_POST['csrf_token'] ?? '';
@@ -84,6 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             } elseif (!$user['is_active']) {
                 $error = 'Akun Anda tidak aktif. Hubungi administrator.';
+            } elseif ($isGoogleAuthActive && in_array($googleLoginMode, ['staff_google_only', 'google_only'], true) && $user['role'] !== 'admin') {
+                $error = 'Demi keamanan sistem, staf wajib masuk menggunakan tombol Akun Google Resmi yang terdaftar.';
             } else {
                 // Catat sukses & reset catatan gagal
                 record_login_attempt($username, true);
@@ -337,30 +341,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <form action="" method="post" autocomplete="off">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
-                <input type="hidden" name="auth_type" value="password">
-                <div class="form-group mb-3">
-                    <label class="text-sm text-muted"><i class="fas fa-user mr-1"></i>Username</label>
-                    <input type="text" name="username" class="form-control" placeholder="Masukkan username" required autofocus>
-                </div>
-                <div class="form-group mb-4">
-                    <label class="text-sm text-muted"><i class="fas fa-lock mr-1"></i>Password</label>
-                    <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">
-                    <i class="fas fa-sign-in-alt mr-2"></i>MASUK KE SISTEM
-                </button>
-            </form>
+            <div id="manualLoginSection" style="<?= $hideManualFormByDefault ? 'display: none;' : '' ?>">
+                <form action="" method="post" autocomplete="off">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+                    <input type="hidden" name="auth_type" value="password">
+                    <div class="form-group mb-3">
+                        <label class="text-sm text-muted"><i class="fas fa-user mr-1"></i>Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="Masukkan username" required <?= !$hideManualFormByDefault ? 'autofocus' : '' ?>>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="text-sm text-muted"><i class="fas fa-lock mr-1"></i>Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt mr-2"></i>MASUK KE SISTEM
+                    </button>
+                </form>
+            </div>
 
             <?php if ($isGoogleAuthActive): ?>
-                <div class="login-divider">ATAU MASUK DENGAN</div>
+                <div id="googleDivider" class="login-divider" style="<?= $hideManualFormByDefault ? 'display: none;' : '' ?>">ATAU MASUK DENGAN</div>
                 <form action="" method="post" id="googleLoginForm" class="mb-0">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
                     <input type="hidden" name="auth_type" value="google">
                     <input type="hidden" name="google_credential" id="google_credential" value="">
                 </form>
                 <div id="googleButtonContainer" class="google-btn-wrapper"></div>
+                <?php if ($googleLoginMode === 'google_only'): ?>
+                    <div class="text-center mt-3">
+                        <a href="javascript:void(0)" onclick="toggleManualAdminLogin()" id="btnToggleManual" class="text-xs text-muted" style="text-decoration: underline;">
+                            <?= $hideManualFormByDefault ? '<i class="fas fa-user-shield mr-1"></i>Login Darurat Admin' : 'Sembunyikan Login Manual' ?>
+                        </a>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <p class="mt-4 mb-0 text-xs text-muted text-center">
@@ -415,6 +428,24 @@ function initGoogleSignIn() {
         cancel_on_tap_outside: true
     });
     renderGoogleButton();
+}
+
+function toggleManualAdminLogin() {
+    var sec = document.getElementById('manualLoginSection');
+    var div = document.getElementById('googleDivider');
+    var btn = document.getElementById('btnToggleManual');
+    if (!sec) return;
+    if (sec.style.display === 'none') {
+        sec.style.display = 'block';
+        if (div) div.style.display = 'flex';
+        if (btn) btn.innerHTML = 'Sembunyikan Login Manual';
+        var inputUser = sec.querySelector('input[name="username"]');
+        if (inputUser) inputUser.focus();
+    } else {
+        sec.style.display = 'none';
+        if (div) div.style.display = 'none';
+        if (btn) btn.innerHTML = '<i class="fas fa-user-shield mr-1"></i>Login Darurat Admin';
+    }
 }
 </script>
 <?php endif; ?>

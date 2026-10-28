@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'timezone' => trim($_POST['timezone'] ?? 'Asia/Makassar'),
             'maintenance_mode' => $_POST['maintenance_mode'] ?? '0',
             'google_login_enabled' => $_POST['google_login_enabled'] ?? '0',
+            'google_login_mode' => $_POST['google_login_mode'] ?? 'both',
             'google_client_id' => trim($_POST['google_client_id'] ?? ''),
             'skz_nama_pimpinan' => trim($_POST['skz_nama_pimpinan'] ?? ''),
             'skz_jabatan_pimpinan' => trim($_POST['skz_jabatan_pimpinan'] ?? ''),
@@ -197,23 +198,34 @@ include __DIR__ . '/../../../inc/header.php';
                 <i class="fab fa-google mr-2"></i>Pengaturan Login Akun Google (OAuth 2.0 / Google Identity)
             </h5>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label><i class="fas fa-toggle-on mr-1"></i>Status Login Google</label>
                         <select class="form-control" name="google_login_enabled">
                             <option value="0" <?= ($settings['google_login_enabled'] ?? '0') === '0' ? 'selected' : '' ?>>Nonaktif</option>
                             <option value="1" <?= ($settings['google_login_enabled'] ?? '0') === '1' ? 'selected' : '' ?>>Aktif</option>
                         </select>
-                        <small class="text-muted d-block mt-1">Hanya mengizinkan masuk bagi email Google yang terdaftar pada menu <strong>Manajemen Pengguna</strong>.</small>
+                        <small class="text-muted d-block mt-1">Hanya mengizinkan email yang terdaftar di <strong>Manajemen Pengguna</strong>.</small>
                     </div>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label><i class="fas fa-shield-alt mr-1"></i>Metode Login yang Diizinkan</label>
+                        <?php $gMode = $settings['google_login_mode'] ?? 'both'; ?>
+                        <select class="form-control" name="google_login_mode">
+                            <option value="both" <?= $gMode === 'both' ? 'selected' : '' ?>>Keduanya (Manual & Google)</option>
+                            <option value="staff_google_only" <?= $gMode === 'staff_google_only' ? 'selected' : '' ?>>Wajib Google (Staf) + Manual (Admin)</option>
+                            <option value="google_only" <?= $gMode === 'google_only' ? 'selected' : '' ?>>Hanya Akun Google (Sembunyikan Form Manual)</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">Mengatur apakah form Username & Password tetap ditampilkan atau dibatasi.</small>
+                    </div>
+                </div>
+                <div class="col-md-5">
                     <div class="form-group">
                         <label><i class="fas fa-key mr-1"></i>Google OAuth Client ID</label>
                         <input type="text" class="form-control" name="google_client_id" value="<?= clean($settings['google_client_id'] ?? '') ?>" placeholder="Contoh: 1234567890-abcdefg.apps.googleusercontent.com">
                         <small class="text-muted d-block mt-1">
-                            Dapatkan Client ID dari <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console (Credentials)</a>.
-                            Tambahkan origin situs Anda (misal <code>http://localhost</code> dan <code>https://<?= clean($_SERVER['HTTP_HOST'] ?? 'pengumpulan.baznassumbawa.id') ?></code>) pada bagian <strong>Authorized JavaScript origins</strong>.
+                            Dapatkan dari <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console</a> (Authorized JS origins: <code>https://<?= clean($_SERVER['HTTP_HOST'] ?? 'pengumpulan.baznassumbawa.id') ?></code>).
                         </small>
                     </div>
                 </div>
