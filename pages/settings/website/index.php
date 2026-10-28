@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'admin_email' => trim($_POST['admin_email'] ?? ''),
             'timezone' => trim($_POST['timezone'] ?? 'Asia/Makassar'),
             'maintenance_mode' => $_POST['maintenance_mode'] ?? '0',
+            'google_login_enabled' => $_POST['google_login_enabled'] ?? '0',
+            'google_client_id' => trim($_POST['google_client_id'] ?? ''),
             'skz_nama_pimpinan' => trim($_POST['skz_nama_pimpinan'] ?? ''),
             'skz_jabatan_pimpinan' => trim($_POST['skz_jabatan_pimpinan'] ?? ''),
             'skz_kota' => trim($_POST['skz_kota'] ?? 'Sumbawa Besar'),
@@ -185,6 +187,34 @@ include __DIR__ . '/../../../inc/header.php';
                             <option value="0" <?= ($settings['maintenance_mode'] ?? '0') === '0' ? 'selected' : '' ?>>Nonaktif</option>
                             <option value="1" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'selected' : '' ?>>Aktif</option>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" style="border-top: 1px solid #dee2e6;">
+
+            <h5 class="font-weight-bold text-success mb-3">
+                <i class="fab fa-google mr-2"></i>Pengaturan Login Akun Google (OAuth 2.0 / Google Identity)
+            </h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label><i class="fas fa-toggle-on mr-1"></i>Status Login Google</label>
+                        <select class="form-control" name="google_login_enabled">
+                            <option value="0" <?= ($settings['google_login_enabled'] ?? '0') === '0' ? 'selected' : '' ?>>Nonaktif</option>
+                            <option value="1" <?= ($settings['google_login_enabled'] ?? '0') === '1' ? 'selected' : '' ?>>Aktif</option>
+                        </select>
+                        <small class="text-muted d-block mt-1">Hanya mengizinkan masuk bagi email Google yang terdaftar pada menu <strong>Manajemen Pengguna</strong>.</small>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label><i class="fas fa-key mr-1"></i>Google OAuth Client ID</label>
+                        <input type="text" class="form-control" name="google_client_id" value="<?= clean($settings['google_client_id'] ?? '') ?>" placeholder="Contoh: 1234567890-abcdefg.apps.googleusercontent.com">
+                        <small class="text-muted d-block mt-1">
+                            Dapatkan Client ID dari <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">Google Cloud Console (Credentials)</a>.
+                            Tambahkan origin situs Anda (misal <code>http://localhost</code> dan <code>https://<?= clean($_SERVER['HTTP_HOST'] ?? 'pengumpulan.baznassumbawa.id') ?></code>) pada bagian <strong>Authorized JavaScript origins</strong>.
+                        </small>
                     </div>
                 </div>
             </div>

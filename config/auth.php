@@ -157,13 +157,110 @@ function require_auth(array|string $roles = []): void
 
 function find_user_by_username(string $username): ?array
 {
-    $stmt = db()->prepare('SELECT id, full_name, username, password, role, is_active, session_id, last_activity FROM users WHERE username = ? LIMIT 1');
+    $stmt = db()->prepare('SELECT id, full_name, username, email, password, role, is_active, photo, session_id, last_activity FROM users WHERE username = ? LIMIT 1');
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
     $stmt->close();
     return $user ?: null;
+}
+
+function find_user_by_email(string $email): ?array
+{
+    $email = trim($email);
+    if ($email === '') {
+        return null;
+    }
+    $stmt = db()->prepare('SELECT id, full_name, username, email, password, role, is_active, photo, session_id, last_activity FROM users WHERE LOWER(TRIM(email)) = LOWER(?) LIMIT 1');
+    $stmt->bind_param('s', $email);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+    return $user ?: null;
+}
+
+/**
+ * Memverifikasi Google ID Token (JWT) melalui endpoint tokeninfo resmi Google.
+ * Mengembalikan payload user Google jika valid, atau null jika gagal.
+ */
+function verify_google_id_token(string $idToken, string $expectedClientId, string &$errorMessage = ''): ?array
+{
+    $idToken = trim($idToken);
+    $expectedClientId = trim($expectedClientId);
+
+    if ($idToken === '' || $expectedClientId === '') {
+        $errorMessage = 'Token atau Google Client ID belum dikonfigurasi.';
+        return null;
+    }
+
+    $verifyUrl = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
+
+    $response = false;
+    $httpCode = 0;
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($verifyUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $response = curl_exec($ch);
+        $httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+    } else {
+        $ctx = stream_context_create([
+            'http' => ['timeout' => 10, 'ignore_errors' => true],
+            'ssl'  => ['verify_peer' => false, 'verify_peer_name' => false]
+        ]);
+        $response = @file_get_contents($verifyUrl, false, $ctx);
+        $httpCode = $response !== false ? 200 : 0;
+    }
+
+    if ($response === false || $httpCode !== 200) {
+        $errorMessage = 'Gagal memverifikasi kredensial dengan server Google.';
+        return null;
+    }
+
+    $payload = json_decode((string)$response, true);
+    if (!is_array($payload) || isset($payload['error'])) {
+        $errorMessage = 'Token Google tidak valid atau telah kedaluwarsa.';
+        return null;
+    }
+
+    // Validasi audience (Client ID)
+    $aud = $payload['aud'] ?? '';
+    if ($aud !== $expectedClientId) {
+        $errorMessage = 'Google Client ID tidak cocok dengan aplikasi ini.';
+        return null;
+    }
+
+    // Validasi issuer
+    $iss = $payload['iss'] ?? '';
+    if (!in_array($iss, ['accounts.google.com', 'https://accounts.google.com'], true)) {
+        $errorMessage = 'Penerbit token (issuer) tidak sah.';
+        return null;
+    }
+
+    // Validasi waktu kedaluwarsa
+    if (isset($payload['exp']) && (int)$payload['exp'] < time()) {
+        $errorMessage = 'Sesi login Google telah kedaluwarsa. Silakan coba lagi.';
+        return null;
+    }
+
+    // Pastikan email ada dan terverifikasi
+    $emailVerified = $payload['email_verified'] ?? false;
+    if (empty($payload['email']) || ($emailVerified !== true && $emailVerified !== 'true' && $emailVerified !== '1')) {
+        $errorMessage = 'Alamat email Google belum terverifikasi.';
+        return null;
+    }
+
+    return [
+        'sub'     => (string)($payload['sub'] ?? ''),
+        'email'   => strtolower(trim((string)$payload['email'])),
+        'name'    => trim((string)($payload['name'] ?? '')),
+        'picture' => trim((string)($payload['picture'] ?? ''))
+    ];
 }
 
 function login_user(array $user): void

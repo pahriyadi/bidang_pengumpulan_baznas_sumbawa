@@ -78,6 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($email !== '') {
+            $stmtEmail = $conn->prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(?) LIMIT 1');
+            $stmtEmail->bind_param('s', $email);
+            $stmtEmail->execute();
+            if ($stmtEmail->get_result()->num_rows > 0) {
+                $stmtEmail->close();
+                echo json_encode(['success' => false, 'message' => 'Alamat email sudah terdaftar pada pengguna lain.']);
+                exit;
+            }
+            $stmtEmail->close();
+        }
+
         $hashed = password_hash($password, PASSWORD_DEFAULT);
         $stmt = $conn->prepare('INSERT INTO users (username, password, role, full_name, email, is_active) VALUES (?, ?, ?, ?, ?, ?)');
         $stmt->bind_param('sssssi', $username, $hashed, $role, $full_name, $email, $is_active);
@@ -100,6 +112,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = trim($_POST['email'] ?? '');
         $role = $_POST['role'] ?? 'user';
         $is_active = (int)($_POST['is_active'] ?? 1);
+
+        if ($email !== '') {
+            $stmtEmail = $conn->prepare('SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(?) AND id != ? LIMIT 1');
+            $stmtEmail->bind_param('si', $email, $id);
+            $stmtEmail->execute();
+            if ($stmtEmail->get_result()->num_rows > 0) {
+                $stmtEmail->close();
+                echo json_encode(['success' => false, 'message' => 'Alamat email sudah terdaftar pada pengguna lain.']);
+                exit;
+            }
+            $stmtEmail->close();
+        }
 
         if ($password !== '') {
             $pwdErr = '';

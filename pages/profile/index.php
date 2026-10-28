@@ -38,8 +38,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $usernameExists = $check->get_result()->num_rows > 0;
         $check->close();
 
+        $emailExists = false;
+        if ($email !== '') {
+            $checkEmail = $conn->prepare("SELECT id FROM users WHERE LOWER(TRIM(email)) = LOWER(?) AND id != ? LIMIT 1");
+            $checkEmail->bind_param('si', $email, $user['id']);
+            $checkEmail->execute();
+            $emailExists = $checkEmail->get_result()->num_rows > 0;
+            $checkEmail->close();
+        }
+
         if ($usernameExists) {
             $error = 'Username sudah digunakan oleh akun lain.';
+        } elseif ($emailExists) {
+            $error = 'Alamat email sudah digunakan oleh akun lain.';
         } elseif ($password !== '') {
             $pwdErr = '';
             if (!validate_password_strength($password, $pwdErr)) {

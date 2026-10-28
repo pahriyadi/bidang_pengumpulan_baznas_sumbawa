@@ -12,10 +12,52 @@ if (is_authenticated()) {
     exit;
 }
 
+$googleLoginEnabled = get_setting('google_login_enabled', '0') === '1';
+$googleClientId = trim(get_setting('google_client_id', ''));
+$isGoogleAuthActive = $googleLoginEnabled && $googleClientId !== '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $csrfToken = $_POST['csrf_token'] ?? '';
+    $authType = $_POST['auth_type'] ?? 'password';
+
     if (!verify_csrf_token($csrfToken)) {
         $error = 'Sesi formulir telah kedaluwarsa. Silakan muat ulang halaman.';
+    } elseif ($authType === 'google') {
+        $idToken = trim($_POST['google_credential'] ?? '');
+
+        if (!$isGoogleAuthActive) {
+            $error = 'Login menggunakan akun Google sedang tidak diaktifkan.';
+        } elseif ($idToken === '') {
+            $error = 'Token kredensial Google tidak ditemukan.';
+        } else {
+            $googleErr = '';
+            $googleUser = verify_google_id_token($idToken, $googleClientId, $googleErr);
+
+            if (!$googleUser) {
+                $error = $googleErr ?: 'Verifikasi akun Google gagal.';
+            } else {
+                $email = $googleUser['email'];
+                $lockStatus = check_brute_force_lockout($email);
+
+                if ($lockStatus['locked']) {
+                    $error = 'Terlalu banyak percobaan login gagal. Demi keamanan, silakan coba kembali dalam ' . $lockStatus['remaining_minutes'] . ' menit.';
+                } else {
+                    $user = find_user_by_email($email);
+                    if (!$user) {
+                        record_login_attempt($email, false);
+                        $error = 'Akun Google (' . $email . ') belum terdaftar di sistem. Silakan hubungi Administrator untuk mendaftarkan email Anda.';
+                    } elseif (!$user['is_active']) {
+                        $error = 'Akun Anda (' . $email . ') sedang dinonaktifkan. Hubungi Administrator.';
+                    } else {
+                        record_login_attempt($user['username'], true);
+                        login_user($user);
+                        log_audit('LOGIN_GOOGLE', 'users', $user['id'], 'User logged in via Google Account (' . $email . ')');
+                        header('Location: ' . url('index.php'));
+                        exit;
+                    }
+                }
+            }
+        }
     } else {
         $username = trim($_POST['username'] ?? '');
         $password = trim($_POST['password'] ?? '');
@@ -144,11 +186,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #0d9f4f !important;
             color: #ffffff !important;
         }
+        .login-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888888;
+            font-size: 0.78rem;
+            margin: 18px 0;
+        }
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #d1d5db;
+        }
+        .login-divider:not(:empty)::before {
+            margin-right: 10px;
+        }
+        .login-divider:not(:empty)::after {
+            margin-left: 10px;
+        }
+        .google-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            min-height: 40px;
+        }
 
         /* Dark Mode on Login Page */
         body.dark-mode.login-page {
             background-color: #14171a !important;
             color: #e5e7eb !important;
+        }
+        .dark-mode .login-divider {
+            color: #9ca3af;
+        }
+        .dark-mode .login-divider::before,
+        .dark-mode .login-divider::after {
+            border-bottom-color: #374151;
         }
         .dark-mode .login-box .card {
             background-color: #1f2328 !important;
@@ -264,6 +339,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form action="" method="post" autocomplete="off">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+                <input type="hidden" name="auth_type" value="password">
                 <div class="form-group mb-3">
                     <label class="text-sm text-muted"><i class="fas fa-user mr-1"></i>Username</label>
                     <input type="text" name="username" class="form-control" placeholder="Masukkan username" required autofocus>
@@ -275,22 +351,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="btn btn-primary btn-block">
                     <i class="fas fa-sign-in-alt mr-2"></i>MASUK KE SISTEM
                 </button>
-                <p class="mt-4 mb-0 text-xs text-muted text-center">
-                    &copy; <?= date('Y') ?> BAZNAS Kabupaten Sumbawa.
-                    <br>Sistem Pengumpulan Zakat, Infak, dan Sedekah.
-                </p>
             </form>
+
+            <?php if ($isGoogleAuthActive): ?>
+                <div class="login-divider">ATAU MASUK DENGAN</div>
+                <form action="" method="post" id="googleLoginForm" class="mb-0">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(generate_csrf_token()) ?>">
+                    <input type="hidden" name="auth_type" value="google">
+                    <input type="hidden" name="google_credential" id="google_credential" value="">
+                </form>
+                <div id="googleButtonContainer" class="google-btn-wrapper"></div>
+            <?php endif; ?>
+
+            <p class="mt-4 mb-0 text-xs text-muted text-center">
+                &copy; <?= date('Y') ?> BAZNAS Kabupaten Sumbawa.
+                <br>Sistem Pengumpulan Zakat, Infak, dan Sedekah.
+            </p>
         </div>
     </div>
 </div>
 <script src="<?= asset('adminlte/plugins/jquery/jquery.min.js') ?>"></script>
 <script src="<?= asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<?php if ($isGoogleAuthActive): ?>
+<script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
+<script>
+function handleGoogleCredentialResponse(response) {
+    if (response && response.credential) {
+        const preloader = document.getElementById('page-preloader');
+        if (preloader) {
+            preloader.style.display = 'flex';
+            preloader.offsetHeight;
+            preloader.classList.remove('fade-out');
+        }
+        document.getElementById('google_credential').value = response.credential;
+        document.getElementById('googleLoginForm').submit();
+    }
+}
+
+function renderGoogleButton() {
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
+    var container = document.getElementById('googleButtonContainer');
+    if (!container) return;
+    var isDark = document.body.classList.contains('dark-mode') || document.documentElement.classList.contains('dark-mode');
+    container.innerHTML = '';
+    var btnWidth = container.offsetWidth > 0 ? Math.min(350, container.offsetWidth) : 348;
+    google.accounts.id.renderButton(container, {
+        type: 'standard',
+        theme: isDark ? 'filled_black' : 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left',
+        width: btnWidth
+    });
+}
+
+function initGoogleSignIn() {
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return;
+    google.accounts.id.initialize({
+        client_id: <?= json_encode($googleClientId) ?>,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+    });
+    renderGoogleButton();
+}
+</script>
+<?php endif; ?>
 <script>
 function toggleDarkMode() {
     var isDark = document.body.classList.toggle('dark-mode');
     document.documentElement.classList.toggle('dark-mode', isDark);
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     updateThemeUI(isDark);
+    if (typeof renderGoogleButton === 'function') {
+        renderGoogleButton();
+    }
 }
 function updateThemeUI(isDark) {
     var icon = document.getElementById('theme-toggle-icon');
