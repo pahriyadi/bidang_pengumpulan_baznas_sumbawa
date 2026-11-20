@@ -1,15 +1,35 @@
 <?php
 /**
  * Konfigurasi koneksi database Pengumpulan ZIS.
+ * Mendukung auto-switch antara Server Production (cPanel) dan Localhost (XAMPP)
+ * serta mendukung override melalui config/database.local.php (tidak dilacak Git).
  */
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'pengumpulan_zis');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
-// Ubah ke true hanya saat debugging lokal. Pastikan false untuk server production demi mencegah kebocoran data.
-define('DEBUG_MODE', false);
+$localOverride = __DIR__ . '/database.local.php';
+if (is_file($localOverride)) {
+    require_once $localOverride;
+}
+
+$isProductionServer = is_dir('/home/n1579664') || (isset($_SERVER['HTTP_HOST']) && stripos($_SERVER['HTTP_HOST'], 'baznassumbawa.id') !== false);
+
+if (!defined('DB_HOST')) {
+    define('DB_HOST', 'localhost');
+}
+if (!defined('DB_NAME')) {
+    define('DB_NAME', $isProductionServer ? 'n1579664_xPgbaZtas7iajQGtgfZis' : 'pengumpulan_zis');
+}
+if (!defined('DB_USER')) {
+    define('DB_USER', $isProductionServer ? 'n1579664_baznassbw' : 'root');
+}
+if (!defined('DB_PASS')) {
+    define('DB_PASS', $isProductionServer ? 'kQR*8rgk' : '');
+}
+if (!defined('DB_CHARSET')) {
+    define('DB_CHARSET', 'utf8mb4');
+}
+if (!defined('DEBUG_MODE')) {
+    define('DEBUG_MODE', false);
+}
 
 /**
  * Membuat koneksi mysqli tunggal (singleton).

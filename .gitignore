@@ -17,6 +17,7 @@ backups/*.sql
 *.zip
 *.tar.gz
 config/last_auto_backup.txt
+config/database.local.php
 
 # Composer
 composer.phar
