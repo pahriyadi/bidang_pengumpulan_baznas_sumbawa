@@ -25,9 +25,12 @@ function short_amount($amount) {
     return number_format($amount, 0, ',', '.');
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+
 // 1. Core Summary Metrics
-function get_period_stats($conn, $period) {
-    $stmt = $conn->prepare("SELECT SUM(jumlah_pembayaran) as total, COUNT(id) as count, COUNT(DISTINCT id_muzaki) as unique_muzaki FROM transaksi WHERE DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?");
+function get_period_stats($conn, $period, $danaCond) {
+    $stmt = $conn->prepare("SELECT SUM(t.jumlah_pembayaran) as total, COUNT(t.id) as count, COUNT(DISTINCT t.id_muzaki) as unique_muzaki FROM transaksi t WHERE DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond}");
     $stmt->bind_param('s', $period);
     $stmt->execute();
     $res = $stmt->get_result()->fetch_assoc();
@@ -39,8 +42,8 @@ function get_period_stats($conn, $period) {
     ];
 }
 
-$statsA = get_period_stats($conn, $periodA);
-$statsB = get_period_stats($conn, $periodB);
+$statsA = get_period_stats($conn, $periodA, $danaCond);
+$statsB = get_period_stats($conn, $periodB, $danaCond);
 $growthValue = $statsB['total'] - $statsA['total'];
 $growthPct = $statsA['total'] > 0 ? (($statsB['total'] - $statsA['total']) / $statsA['total']) * 100 : 0;
 $suggestedTarget = $statsA['total'] * $growthFactor;
@@ -48,11 +51,11 @@ $suggestedTarget = $statsA['total'] * $growthFactor;
 // 2. Lost Muzaki
 $lostMuzakiSql = "
     SELECT m.id, m.nama_muzaki, u.nama_upz, 
-           (SELECT COALESCE(SUM(jumlah_pembayaran), 0) FROM transaksi WHERE id_muzaki = m.id AND DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?) as last_amount
+           (SELECT COALESCE(SUM(t.jumlah_pembayaran), 0) FROM transaksi t WHERE t.id_muzaki = m.id AND DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond}) as last_amount
     FROM muzaki m
     LEFT JOIN upz u ON m.id_upz_sekarang = u.id
-    WHERE m.id IN (SELECT id_muzaki FROM transaksi WHERE DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?)
-      AND m.id NOT IN (SELECT id_muzaki FROM transaksi WHERE DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?)
+    WHERE m.id IN (SELECT t.id_muzaki FROM transaksi t WHERE DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond})
+      AND m.id NOT IN (SELECT t.id_muzaki FROM transaksi t WHERE DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond})
     ORDER BY last_amount DESC
 ";
 $stmtLostM = $conn->prepare($lostMuzakiSql);
@@ -63,10 +66,10 @@ $lostMuzaki = $stmtLostM->get_result()->fetch_all(MYSQLI_ASSOC);
 // 3. Lost UPZ
 $lostUpzSql = "
     SELECT u.id, u.nama_upz, 
-           (SELECT COALESCE(SUM(jumlah_pembayaran), 0) FROM transaksi WHERE id_upz = u.id AND DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?) as last_amount
+           (SELECT COALESCE(SUM(t.jumlah_pembayaran), 0) FROM transaksi t WHERE t.id_upz = u.id AND DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond}) as last_amount
     FROM upz u
-    WHERE u.id IN (SELECT id_upz FROM transaksi WHERE DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?)
-      AND u.id NOT IN (SELECT id_upz FROM transaksi WHERE DATE_FORMAT(tanggal_transaksi, '%Y-%m') = ?)
+    WHERE u.id IN (SELECT t.id_upz FROM transaksi t WHERE DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond})
+      AND u.id NOT IN (SELECT t.id_upz FROM transaksi t WHERE DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = ? AND {$danaCond})
     ORDER BY last_amount DESC
 ";
 $stmtLostU = $conn->prepare($lostUpzSql);
@@ -77,8 +80,8 @@ $lostUpz = $stmtLostU->get_result()->fetch_all(MYSQLI_ASSOC);
 // 4. Category Shift
 $categoryShift = $conn->query("
     SELECT jp.nama_jenis,
-           (SELECT COALESCE(SUM(jumlah_pembayaran), 0) FROM transaksi WHERE id_jenis_pembayaran = jp.id AND DATE_FORMAT(tanggal_transaksi, '%Y-%m') = '$periodA') as total_A,
-           (SELECT COALESCE(SUM(jumlah_pembayaran), 0) FROM transaksi WHERE id_jenis_pembayaran = jp.id AND DATE_FORMAT(tanggal_transaksi, '%Y-%m') = '$periodB') as total_B
+           (SELECT COALESCE(SUM(t.jumlah_pembayaran), 0) FROM transaksi t WHERE t.id_jenis_pembayaran = jp.id AND DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = '$periodA' AND {$danaCond}) as total_A,
+           (SELECT COALESCE(SUM(t.jumlah_pembayaran), 0) FROM transaksi t WHERE t.id_jenis_pembayaran = jp.id AND DATE_FORMAT(t.tanggal_transaksi, '%Y-%m') = '$periodB' AND {$danaCond}) as total_B
     FROM jenis_pembayaran jp
     HAVING total_A > 0 OR total_B > 0
     ORDER BY total_B DESC
@@ -116,11 +119,40 @@ include __DIR__ . '/../../inc/header.php';
 
 <style>
     .card-one { margin-bottom: 1.5rem; }
-    .ai-card { background-color: #ffffff !important; border-left: 4px solid #0d9f4f !important; }
+    .ai-card { background-color: #ffffff; border-left: 4px solid #0d9f4f !important; }
     .metric-row { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 0px; }
-    .metric-item { flex: 1; min-width: 200px; background: #ffffff !important; padding: 15px; border-radius: 4px; border: 1px solid #b8b8b8 !important; }
-    .table-clean thead th { background: #ffffff !important; font-size: 0.75rem; color: #333; text-transform: uppercase; padding: 15px; border-bottom: 1px solid #b8b8b8 !important; }
+    .metric-item { flex: 1; min-width: 200px; background: #ffffff; padding: 15px; border-radius: 4px; border: 1px solid #b8b8b8; }
+    .table-clean thead th { background: #ffffff; font-size: 0.75rem; color: #333; text-transform: uppercase; padding: 15px; border-bottom: 1px solid #b8b8b8 !important; }
     .table-clean td { padding: 15px; vertical-align: middle; border-top: 1px solid #b8b8b8 !important; }
+
+    /* Dark Mode Overrides untuk Perbandingan */
+    .dark-mode .ai-card {
+        background-color: #1f2328 !important;
+        border-color: #374151 !important;
+        border-left: 4px solid #0d9f4f !important;
+    }
+    .dark-mode .metric-item {
+        background-color: #181b1f !important;
+        border-color: #374151 !important;
+        color: #f3f4f6 !important;
+    }
+    .dark-mode .metric-item h4 {
+        color: #f3f4f6 !important;
+    }
+    .dark-mode .metric-item h4.text-success {
+        color: #34d399 !important;
+    }
+    .dark-mode .metric-item h4.text-danger {
+        color: #f87171 !important;
+    }
+    .dark-mode .table-clean thead th {
+        background-color: #181b1f !important;
+        color: #d1d5db !important;
+        border-bottom-color: #374151 !important;
+    }
+    .dark-mode .table-clean td {
+        border-top-color: #374151 !important;
+    }
 </style>
 
 <!-- 1. FILTER PANEL (ONE COLUMN) -->

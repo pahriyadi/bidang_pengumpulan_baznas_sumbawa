@@ -38,7 +38,7 @@
                     </a>
                 </li>
 
-                <!-- DATA MUZAKI & UPZ -->
+                <!-- 1. DATA MUZAKI & UPZ -->
                 <li class="nav-header text-uppercase" style="color: #4ade80; font-weight: bold;">
                     <i class="fas fa-users mr-1"></i>Data Muzaki & UPZ
                 </li>
@@ -61,38 +61,43 @@
                     </a>
                 </li>
 
-                <!-- TRANSAKSI -->
+                <!-- 2. PENCATATAN TRANSAKSI (ON BALANCE, OFF BALANCE, SKZ & REKENING KORAN) -->
                 <li class="nav-header text-uppercase" style="color: #f59e0b; font-weight: bold;">
-                    <i class="fas fa-exchange-alt mr-1"></i>Transaksi
+                    <i class="fas fa-exchange-alt mr-1"></i>Pencatatan Transaksi
                 </li>
                 <li class="nav-item">
                     <a href="<?= url('pages/transaksi/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'transaksi' ? ' active' : '' ?>">
                         <i class="nav-icon fas fa-cash-register"></i>
-                        <p>Data Transaksi</p>
+                        <p>Transaksi On Balance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('pages/off_balance/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'off_balance' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-clipboard-list"></i>
+                        <p>Transaksi Off Balance</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="<?= url('pages/skz/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'skz' ? ' active' : '' ?>">
                         <i class="nav-icon fas fa-file-contract"></i>
-                        <p><span class="badge badge-success right">Baru</span>SKZ & BSZIS</p>
+                        <p><span class="badge badge-success right">SKZ</span>SKZ & BSZIS Proyek</p>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="<?= url('pages/analisis/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'analisis' ? ' active' : '' ?>">
-                        <i class="nav-icon fas fa-chart-pie"></i>
-                        <p><span class="badge badge-warning right">Baru</span>Analisis Data</p>
+                    <a href="<?= url('pages/rekening_koran/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'rekening_koran' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-university"></i>
+                        <p>Rekening Koran Bank</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="<?= url('pages/analisis/perbandingan.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'analisis_perbandingan' ? ' active' : '' ?>">
-                        <i class="nav-icon fas fa-balance-scale"></i>
-                        <p>Perbandingan Data</p>
-                    </a>
+
+                <!-- 3. LAPORAN & REKAPITULASI (ON BALANCE, OFF BALANCE, SKZ & AUDIT) -->
+                <li class="nav-header text-uppercase" style="color: #3b82f6; font-weight: bold;">
+                    <i class="fas fa-file-invoice-dollar mr-1"></i>Laporan & Rekapitulasi
                 </li>
                 <li class="nav-item">
                     <a href="<?= url('pages/laporan/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'laporan' ? ' active' : '' ?>">
                         <i class="nav-icon fas fa-chart-line"></i>
-                        <p>Laporan & Export</p>
+                        <p>Laporan On Balance</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -102,26 +107,54 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="<?= url('pages/laporan_tahunan/index.php') ?>" class="nav-link <?= ($activeMenu == 'laporan_tahunan') ? 'active' : '' ?>">
+                    <a href="<?= url('pages/laporan_tahunan/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'laporan_tahunan' ? ' active' : '' ?>">
                         <i class="nav-icon fas fa-calendar-check"></i>
                         <p>Laporan Tahunan</p>
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a href="<?= url('pages/off_balance/laporan.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'off_balance_laporan' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-clipboard-check"></i>
+                        <p>Laporan Off Balance</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('pages/skz/laporan.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'skz_laporan' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-file-invoice"></i>
+                        <p>Laporan SKZ & BSZIS</p>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a href="<?= url('pages/laporan_audit/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'laporan_audit' ? ' active' : '' ?>">
-                        <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                        <i class="nav-icon fas fa-shield-alt"></i>
                         <p><span class="badge badge-success right">Audit</span>Laporan Audit</p>
                     </a>
                 </li>
 
+                <!-- 4. ANALISIS & KINERJA PENGUMPULAN -->
+                <li class="nav-header text-uppercase" style="color: #10b981; font-weight: bold;">
+                    <i class="fas fa-bullseye mr-1"></i>Kinerja & Analisis
+                </li>
                 <li class="nav-item">
                     <a href="<?= url('pages/kinerja/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'kinerja' ? ' active' : '' ?>">
                         <i class="nav-icon fas fa-bullseye"></i>
-                        <p>Kinerja Pengumpulan</p>
+                        <p>Target & Kinerja (RKAT)</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('pages/analisis/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'analisis' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-chart-pie"></i>
+                        <p>Analisis Data ZIS</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="<?= url('pages/analisis/perbandingan.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'analisis_perbandingan' ? ' active' : '' ?>">
+                        <i class="nav-icon fas fa-balance-scale"></i>
+                        <p>Perbandingan Periode</p>
                     </a>
                 </li>
 
-                <!-- DOKUMEN BANTUAN / PENERIMA MANFAAT -->
+                <!-- 5. DOKUMEN BANTUAN / PENERIMA MANFAAT -->
                 <li class="nav-header text-uppercase" style="color: #06b6d4; font-weight: bold;">
                     <i class="fas fa-folder-open mr-1"></i>Dokumen Bantuan
                 </li>
@@ -138,7 +171,7 @@
                     </a>
                 </li>
 
-                <!-- MASTER DATA -->
+                <!-- 6. MASTER DATA -->
                 <?php
                 $masterMenus = ['jenis_pembayaran', 'sub_jenis_pembayaran', 'kategori_dana', 'metode_pembayaran', 'status_muzaki', 'sumber_rekening', 'kategori_upz'];
                 $isMasterActive = in_array($activeMenu ?? '', $masterMenus, true);
@@ -200,59 +233,47 @@
                     </ul>
                 </li>
 
-                <li class="nav-item">
-                    <a href="<?= url('pages/rekening_koran/index.php') ?>" class="nav-link <?= ($activeMenu == 'rekening_koran') ? 'active' : '' ?>">
-                        <i class="nav-icon fas fa-university"></i>
-                        <p>Rekening Koran</p>
-                    </a>
-                </li>
-
-                <!-- PENGATURAN SISTEM -->
-                <li class="nav-header">PENGATURAN</li>
+                <!-- 7. PENGATURAN & PEMELIHARAAN SISTEM -->
                 <?php if (has_role('admin')): ?>
+                    <li class="nav-header text-uppercase" style="color: #ef4444; font-weight: bold;">
+                        <i class="fas fa-cog mr-1"></i>Pengaturan Sistem
+                    </li>
                     <li class="nav-item">
-                        <a href="<?= url('pages/settings/backup.php') ?>" class="nav-link <?= ($activeMenu == 'settings') ? 'active' : '' ?>">
+                        <a href="<?= url('pages/users/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'users' ? ' active' : '' ?>">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Manajemen Pengguna</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= url('pages/settings/website/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'website_settings' ? ' active' : '' ?>">
+                            <i class="nav-icon fas fa-globe"></i>
+                            <p>Pengaturan Website</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= url('pages/settings/backup.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'settings' ? ' active' : '' ?>">
                             <i class="nav-icon fas fa-database"></i>
                             <p>Backup & Restore</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?= url('pages/settings/diagnostics.php') ?>" class="nav-link <?= ($activeMenu == 'diagnostics') ? 'active' : '' ?>">
+                        <a href="<?= url('pages/settings/diagnostics.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'diagnostics' ? ' active' : '' ?>">
                             <i class="nav-icon fas fa-stethoscope text-success"></i>
                             <p>Dokter Sistem & DB</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?= url('pages/settings/audit_log.php') ?>" class="nav-link <?= ($activeMenu == 'audit_log') ? 'active' : '' ?>">
+                        <a href="<?= url('pages/settings/audit_log.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'audit_log' ? ' active' : '' ?>">
                             <i class="nav-icon fas fa-history"></i>
                             <p>Audit Trail</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?= url('pages/settings/changelog.php') ?>" class="nav-link <?= ($activeMenu == 'changelog') ? 'active' : '' ?>">
+                        <a href="<?= url('pages/settings/changelog.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'changelog' ? ' active' : '' ?>">
                             <i class="nav-icon fas fa-bullhorn"></i>
                             <p>Log Perubahan</p>
                         </a>
                     </li>
-<?php
-$settingsMenus = ['users', 'website_settings'];
-                $isSettingsActive = in_array($activeMenu ?? '', $settingsMenus, true);
-                ?>
-                <li class="nav-header text-uppercase" style="color: #ef4444; font-weight: bold;">
-                    <i class="fas fa-cog mr-1"></i>Pengaturan
-                </li>
-                <li class="nav-item">
-                    <a href="<?= url('pages/users/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'users' ? ' active' : '' ?>">
-                        <i class="nav-icon fas fa-user-shield"></i>
-                        <p>Manajemen Pengguna</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="<?= url('pages/settings/website/index.php') ?>" class="nav-link<?= ($activeMenu ?? '') === 'website_settings' ? ' active' : '' ?>">
-                        <i class="nav-icon fas fa-globe"></i>
-                        <p>Pengaturan Website</p>
-                    </a>
-                </li>
                 <?php endif; ?>
 
                 <!-- LOGOUT -->

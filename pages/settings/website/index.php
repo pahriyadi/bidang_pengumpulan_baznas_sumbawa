@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'google_login_enabled' => $_POST['google_login_enabled'] ?? '0',
             'google_login_mode' => $_POST['google_login_mode'] ?? 'both',
             'google_client_id' => trim($_POST['google_client_id'] ?? ''),
+            'pengumpulan_excluded_jenis_ids' => json_encode(array_values(array_filter(array_map('intval', $_POST['pengumpulan_excluded_jenis_ids'] ?? [])))),
+            'pengumpulan_excluded_sub_ids' => json_encode(array_values(array_filter(array_map('intval', $_POST['pengumpulan_excluded_sub_ids'] ?? [])))),
             'skz_nama_pimpinan' => trim($_POST['skz_nama_pimpinan'] ?? ''),
             'skz_jabatan_pimpinan' => trim($_POST['skz_jabatan_pimpinan'] ?? ''),
             'skz_kota' => trim($_POST['skz_kota'] ?? 'Sumbawa Besar'),
@@ -145,6 +147,12 @@ $skzHasCustomLogo = !empty(get_setting('skz_logo_path'));
 $skzTtdUrl = get_skz_ttd_url();
 $skzHasCustomTtd = !empty($skzTtdUrl);
 
+$allJenisList = get_jenis_pembayaran_list();
+$allSubJenisList = $conn->query("SELECT s.*, j.nama_jenis FROM sub_jenis_pembayaran s LEFT JOIN jenis_pembayaran j ON s.id_jenis_pembayaran = j.id ORDER BY j.nama_jenis ASC, s.nama_sub_jenis ASC")->fetch_all(MYSQLI_ASSOC);
+$currentExcluded = get_pengumpulan_excluded_ids($conn);
+$excludedJenisIds = $currentExcluded['jenis_ids'] ?? [];
+$excludedSubIds = $currentExcluded['sub_ids'] ?? [];
+
 include __DIR__ . '/../../../inc/header.php';
 ?>
 
@@ -234,6 +242,44 @@ include __DIR__ . '/../../../inc/header.php';
             <hr class="my-4" style="border-top: 1px solid #dee2e6;">
 
             <h5 class="font-weight-bold text-success mb-3">
+                <i class="fas fa-filter mr-2"></i>Pengaturan Klasifikasi Dana: Penerimaan vs Pengumpulan
+            </h5>
+            <p class="text-muted small mb-3">
+                <strong>Penerimaan</strong> mencakup seluruh jenis &amp; sub-jenis pembayaran serta kategori dana.
+                <strong>Pengumpulan</strong> mencakup seluruh dana <em>kecuali</em> jenis/sub-jenis <strong>Titipan Penyaluran (BAZ-PROV-PUSAT / APBN/D)</strong> di bawah ini:
+            </p>
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="form-group">
+                        <label><i class="fas fa-tags mr-1"></i>Jenis Pembayaran yang Dikecualikan dari Pengumpulan</label>
+                        <select class="form-control select2" name="pengumpulan_excluded_jenis_ids[]" multiple="multiple" data-placeholder="Pilih Jenis Pembayaran (Misal: Titipan Penyaluran)">
+                            <?php foreach ($allJenisList as $j): ?>
+                                <option value="<?= (int)$j['id'] ?>" <?= in_array((int)$j['id'], $excludedJenisIds, true) ? 'selected' : '' ?>>
+                                    <?= clean($j['nama_jenis']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-muted d-block mt-1">Otomatis mendeteksi jenis bernama <em>Titipan Penyaluran</em>. Anda juga bisa menambahkannya secara manual.</small>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="form-group">
+                        <label><i class="fas fa-layer-group mr-1"></i>Sub-Jenis Pembayaran yang Dikecualikan dari Pengumpulan</label>
+                        <select class="form-control select2" name="pengumpulan_excluded_sub_ids[]" multiple="multiple" data-placeholder="Pilih Sub-Jenis (Misal: Titipan Penyaluran | BAZ-PROV-PUSAT | APBN/D)">
+                            <?php foreach ($allSubJenisList as $sj): ?>
+                                <option value="<?= (int)$sj['id'] ?>" <?= in_array((int)$sj['id'], $excludedSubIds, true) ? 'selected' : '' ?>>
+                                    <?= clean(($sj['nama_jenis'] ?? 'Lainnya') . ' — ' . $sj['nama_sub_jenis']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="text-muted d-block mt-1">Otomatis mendeteksi sub-jenis <em>Titipan Penyaluran | BAZ-PROV-PUSAT | APBN/D</em>, <em>Dana Titipan</em>, atau <em>Infak Penyaluran (Titipan)</em>.</small>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4" style="border-top: 1px solid #dee2e6;">
+
+            <h5 class="font-weight-bold text-success mb-3">
                 <i class="fas fa-file-contract mr-2"></i>Pengaturan Penandatangan & Logo Surat Ketetapan Zakat (SKZ) & BSZIS
             </h5>
             <div class="row">
@@ -308,6 +354,9 @@ include __DIR__ . '/../../../inc/header.php';
 
 <script>
 $(document).ready(function() {
+    if ($.fn.select2) {
+        $('.select2').select2({ theme: 'bootstrap4', width: '100%' });
+    }
     $('#inputSkzLogo').on('change', function(e) {
         if (this.files && this.files[0]) {
             var reader = new FileReader();

@@ -3,6 +3,23 @@ require_once __DIR__ . '/../config/helpers.php';
 
 ensure_session_started();
 $user = current_user();
+$activeDanaMode = get_dana_mode();
+
+// Global AJAX / POST handler untuk mengganti mode tampilan dana (Penerimaan vs Pengumpulan)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'set_dana_mode') {
+    header('Content-Type: application/json');
+    $newMode = strtolower(trim((string)($_POST['dana_mode'] ?? 'penerimaan')));
+    if (!in_array($newMode, ['penerimaan', 'pengumpulan'], true)) {
+        $newMode = 'penerimaan';
+    }
+    $_SESSION['dana_mode'] = $newMode;
+    echo json_encode([
+        'success' => true,
+        'dana_mode' => $newMode,
+        'label' => get_dana_mode_label($newMode)
+    ]);
+    exit;
+}
 
 require_once __DIR__ . '/../config/cache.php';
 start_page_cache();
@@ -140,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && in_array
     <link rel="stylesheet" href="<?= asset('adminlte/plugins/select2/css/select2.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('adminlte/dist/css/adminlte.min.css') ?>">
-    <link rel="stylesheet" href="<?= asset('css/custom.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/custom.css') ?>?v=<?= @filemtime(__DIR__ . '/../assets/css/custom.css') ?: '2' ?>">
     <script src="<?= asset('adminlte/plugins/jquery/jquery.min.js') ?>"></script>
     <script>
         $.ajaxSetup({
@@ -275,13 +292,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && in_array
     <div class="content-wrapper">
         <div class="content-header">
             <div class="container-fluid">
-                <div class="row mb-2">
+                <div class="row mb-2 align-items-center">
                     <div class="col-sm-6">
                         <h1 class="m-0 text-dark"><?= htmlspecialchars($pageTitle) ?></h1>
                         <p class="text-muted mb-0"><?= htmlspecialchars($pageDescription) ?></p>
                     </div>
                     <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
+                        <ol class="breadcrumb float-sm-right mb-0">
                             <?= $breadcrumbs ?? '<li class="breadcrumb-item active">Beranda</li>' ?>
                         </ol>
                     </div>

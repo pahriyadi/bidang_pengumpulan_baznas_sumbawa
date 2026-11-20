@@ -540,19 +540,47 @@ table.dataTable.display tbody tr:hover td {
     box-shadow: none !important;
     border: 1px solid #b8b8b8 !important;
     background-color: #ffffff !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
 }
 
 .small-box>.inner {
-    padding: 20px;
+    padding: 16px 18px;
+    flex: 1 1 auto;
+    position: relative;
+    z-index: 2;
 }
 
 .small-box>.inner h3 {
     color: #333333 !important;
     font-weight: 700 !important;
+    font-size: 1.65rem !important;
+    line-height: 1.25 !important;
+    margin-bottom: 6px !important;
+    white-space: nowrap !important;
+}
+
+.small-box>.inner h3.stat-currency-val {
+    font-size: clamp(1.1rem, 1.35vw, 1.45rem) !important;
+    letter-spacing: -0.02em;
 }
 
 .small-box>.inner p {
     color: #666666 !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 0 !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.small-box .icon>i {
+    font-size: 54px !important;
+    top: 15px !important;
+    right: 15px !important;
 }
 
 /* Override all bg- color variants on small-box */
@@ -2198,6 +2226,42 @@ body.dark-mode {
     color: #f3f4f6 !important;
 }
 
+/* Alert Summary & Info Boxes in Dark Mode (Laporan & Audit) */
+.dark-mode .alert-excel,
+.dark-mode .alert.alert-info,
+.dark-mode .alert.alert-info.alert-excel {
+    background-color: #181b1f !important;
+    border: 1px solid #374151 !important;
+    border-left: 4px solid #38bdf8 !important;
+    color: #e5e7eb !important;
+}
+
+.dark-mode .alert-excel h5,
+.dark-mode .alert.alert-info h5,
+.dark-mode .alert-excel .icon {
+    color: #38bdf8 !important;
+}
+
+.dark-mode .alert-excel strong,
+.dark-mode .alert.alert-info strong {
+    color: #ffffff !important;
+}
+
+.dark-mode .alert-excel .currency-display,
+.dark-mode .alert.alert-info .currency-display {
+    color: #34d399 !important;
+}
+
+.dark-mode .metric-item {
+    background-color: #181b1f !important;
+    border: 1px solid #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.dark-mode .metric-item h4 {
+    color: #f3f4f6 !important;
+}
+
 /* ==============================================================
    6. AI COPILOT CHAT WIDGET (FULL SYSTEM OVERRIDES)
    ============================================================== */
@@ -2516,4 +2580,261 @@ body.dark-mode {
 .dark-mode .ai-custom-card .btn-outline-primary:hover {
     background-color: #2563eb !important;
     color: #ffffff !important;
+}
+
+/* ==============================================================
+   COMPACT TOPBAR NAVBAR (ANTI-WRAP ON LAPTOP 100% ZOOM)
+   ============================================================== */
+.main-header.navbar.topbar-compact {
+    min-height: 46px !important;
+    padding: 0.2rem 0.65rem !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+
+.main-header.navbar.topbar-compact .navbar-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+
+.main-header.navbar.topbar-compact .navbar-nav .nav-item {
+    display: flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+}
+
+.main-header.navbar.topbar-compact .navbar-nav .nav-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.82rem !important;
+    height: auto !important;
+    line-height: 1.2 !important;
+}
+
+.main-header.navbar.topbar-compact .topbar-icon-link {
+    position: relative !important;
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.98rem !important;
+}
+
+.main-header.navbar.topbar-compact .topbar-count-badge {
+    position: absolute !important;
+    top: 2px !important;
+    right: 1px !important;
+    font-size: 0.58rem !important;
+    font-weight: 700 !important;
+    padding: 1px 4px !important;
+    line-height: 1.1 !important;
+    border-radius: 10px !important;
+    min-width: 15px;
+    text-align: center;
+}
+
+.main-header.navbar.topbar-compact .topbar-user-link {
+    padding: 0.3rem 0.5rem !important;
+    gap: 4px;
+}
+
+.main-header.navbar.topbar-compact .topbar-user-name {
+    max-width: 145px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+    font-size: 0.82rem;
+}
+
+.main-header.navbar.topbar-compact .topbar-role-badge {
+    font-size: 0.65rem !important;
+    padding: 2px 5px !important;
+    line-height: 1.1 !important;
+    vertical-align: middle;
+}
+
+/* ==============================================================
+   GLOBAL DANA MODE SWITCHER & COMPARISON CARDS (PAPER WHITE/DARK)
+   ============================================================== */
+.dana-mode-switcher {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f8fafc;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    padding: 2px;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+.dana-mode-switcher .dana-mode-btn {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #4b5563;
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+.dana-mode-switcher .dana-mode-btn:hover {
+    color: #0d9f4f;
+    background-color: rgba(13, 159, 79, 0.06);
+}
+
+.dana-mode-switcher .dana-mode-btn.active {
+    background-color: #0d9f4f;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-color: #0d9f4f;
+}
+
+.dana-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dana-mode-badge.mode-penerimaan {
+    border: 1px solid #17a2b8;
+    color: #0f766e;
+    background-color: rgba(23, 162, 184, 0.08);
+}
+
+.dana-mode-badge.mode-pengumpulan {
+    border: 1px solid #0d9f4f;
+    color: #0d9f4f;
+    background-color: rgba(13, 159, 79, 0.08);
+}
+
+.dana-compare-box {
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    padding: 14px 16px;
+    background-color: #ffffff;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.15s ease;
+}
+
+.dana-compare-box.is-active-mode {
+    border: 1.5px solid #0d9f4f;
+    background-color: #f6fbf8;
+}
+
+.dana-compare-box .compare-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #64748b;
+}
+
+.dana-compare-box .compare-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 6px 0;
+    line-height: 1.2;
+}
+
+.dana-compare-box .compare-meta {
+    font-size: 0.78rem;
+    color: #6b7280;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 6px;
+    margin-top: 4px;
+}
+
+/* Dark Mode Overrides for Dana Switcher & Comparison */
+.dark-mode .dana-mode-switcher {
+    background-color: #181b1f;
+    border-color: #374151;
+}
+
+.dark-mode .dana-mode-switcher .dana-mode-btn {
+    color: #9ca3af;
+}
+
+.dark-mode .dana-mode-switcher .dana-mode-btn:hover {
+    color: #34d399;
+    background-color: rgba(13, 159, 79, 0.15);
+}
+
+.dark-mode .dana-mode-switcher .dana-mode-btn.active {
+    background-color: #0d9f4f;
+    color: #ffffff !important;
+    border-color: #0d9f4f;
+}
+
+.dark-mode .dana-mode-badge.mode-penerimaan {
+    border-color: #38bdf8;
+    color: #7dd3fc;
+    background-color: rgba(56, 189, 248, 0.12);
+}
+
+.dark-mode .dana-mode-badge.mode-pengumpulan {
+    border-color: #34d399;
+    color: #6ee7b7;
+    background-color: rgba(16, 185, 129, 0.14);
+}
+
+.dark-mode .dana-compare-box {
+    background-color: #181b1f;
+    border-color: #374151;
+}
+
+.dark-mode .dana-compare-box.is-active-mode {
+    border-color: #0d9f4f;
+    background-color: rgba(13, 159, 79, 0.1);
+}
+
+.dark-mode .dana-compare-box .compare-title {
+    color: #9ca3af;
+}
+
+.dark-mode .dana-compare-box .compare-meta {
+    color: #9ca3af;
+    border-top-color: #374151;
+}
+
+@media (max-width: 1199px) {
+    .main-header.navbar.topbar-compact .topbar-user-name {
+        max-width: 100px;
+    }
+    .main-header.navbar.topbar-compact .navbar-nav .nav-link {
+        padding: 0.3rem 0.4rem !important;
+        font-size: 0.78rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-header.navbar.topbar-compact .topbar-user-name {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .dana-mode-switcher .dana-mode-btn {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+    .dana-mode-switcher .dana-mode-btn i {
+        display: none;
+    }
 }

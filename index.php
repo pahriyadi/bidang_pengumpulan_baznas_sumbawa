@@ -12,31 +12,62 @@ $conn = db();
 ensure_kinerja_tables($conn);
 ensure_dokumen_tables($conn);
 
-// Stats - Combined for performance
+$activeDanaMode = get_dana_mode();
+$danaCondActive = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+$danaCondPengumpulan = get_dana_mode_sql_condition('pengumpulan', 't', $conn);
+$danaCondTitipan = get_titipan_penyaluran_sql_condition('t', $conn);
+
+// Stats - Combined for performance (Menghitung Penerimaan, Pengumpulan, dan Titipan sekaligus)
 $stats = $conn->query("
     SELECT 
         (SELECT COUNT(*) FROM muzaki) as totalMuzaki,
         (SELECT COUNT(*) FROM upz) as totalUPZ,
         (SELECT COUNT(*) FROM users) as totalUsers,
-        COUNT(*) as totalTransaksi,
-        COALESCE(SUM(jumlah_pembayaran), 0) as totalPembayaran
-    FROM transaksi
+        COUNT(*) as totalTransaksiPenerimaan,
+        COALESCE(SUM(t.jumlah_pembayaran), 0) as totalPenerimaanAll,
+        COALESCE(SUM(CASE WHEN {$danaCondPengumpulan} THEN 1 ELSE 0 END), 0) as totalTransaksiPengumpulan,
+        COALESCE(SUM(CASE WHEN {$danaCondPengumpulan} THEN t.jumlah_pembayaran ELSE 0 END), 0) as totalPengumpulanAll,
+        COALESCE(SUM(CASE WHEN {$danaCondTitipan} THEN 1 ELSE 0 END), 0) as totalTransaksiTitipan,
+        COALESCE(SUM(CASE WHEN {$danaCondTitipan} THEN t.jumlah_pembayaran ELSE 0 END), 0) as totalTitipanAll
+    FROM transaksi t
 ")->fetch_assoc();
 
 $totalMuzaki = $stats['totalMuzaki'] ?? 0;
-$totalTransaksi = $stats['totalTransaksi'] ?? 0;
-$totalPembayaran = $stats['totalPembayaran'] ?? 0;
+$totalPenerimaanAll = (float)($stats['totalPenerimaanAll'] ?? 0);
+$totalPengumpulanAll = (float)($stats['totalPengumpulanAll'] ?? 0);
+$totalTitipanAll = (float)($stats['totalTitipanAll'] ?? 0);
+
+$totalTransaksi = ($activeDanaMode === 'pengumpulan')
+    ? (int)($stats['totalTransaksiPengumpulan'] ?? 0)
+    : (int)($stats['totalTransaksiPenerimaan'] ?? 0);
+$totalPembayaran = ($activeDanaMode === 'pengumpulan')
+    ? $totalPengumpulanAll
+    : $totalPenerimaanAll;
+
 $totalUPZ = $stats['totalUPZ'] ?? 0;
 $totalUsers = $stats['totalUsers'] ?? 0;
 
 // Monthly stats for current year
 $currentYear = (int) date('Y');
 
+// Breakdown Tahun Berjalan (Penerimaan vs Pengumpulan vs Titipan)
+$yearSummary = $conn->query("
+    SELECT
+        COALESCE(SUM(t.jumlah_pembayaran), 0) as yearPenerimaan,
+        COALESCE(SUM(CASE WHEN {$danaCondPengumpulan} THEN t.jumlah_pembayaran ELSE 0 END), 0) as yearPengumpulan,
+        COALESCE(SUM(CASE WHEN {$danaCondTitipan} THEN t.jumlah_pembayaran ELSE 0 END), 0) as yearTitipan
+    FROM transaksi t
+    WHERE YEAR(t.tanggal_transaksi) = {$currentYear}
+")->fetch_assoc();
+$yearPenerimaan = (float)($yearSummary['yearPenerimaan'] ?? 0);
+$yearPengumpulan = (float)($yearSummary['yearPengumpulan'] ?? 0);
+$yearTitipan = (float)($yearSummary['yearTitipan'] ?? 0);
+
 // Monthly grand total (for area total line)
 $monthlyStats = $conn->query("
-    SELECT MONTH(tanggal_transaksi) as bulan, SUM(jumlah_pembayaran) as total
-    FROM transaksi WHERE YEAR(tanggal_transaksi) = {$currentYear}
-    GROUP BY MONTH(tanggal_transaksi) ORDER BY bulan
+    SELECT MONTH(t.tanggal_transaksi) as bulan, SUM(t.jumlah_pembayaran) as total
+    FROM transaksi t WHERE YEAR(t.tanggal_transaksi) = {$currentYear} AND {$danaCondActive}
+    GROUP BY MONTH(t.tanggal_transaksi) ORDER BY bulan
 ");
 
 // Monthly breakdown per jenis pembayaran
@@ -45,7 +76,7 @@ $monthlyJenisStats = $conn->query("
            COALESCE(SUM(t.jumlah_pembayaran), 0) as total
     FROM transaksi t
     LEFT JOIN jenis_pembayaran jp ON t.id_jenis_pembayaran = jp.id
-    WHERE YEAR(t.tanggal_transaksi) = {$currentYear}
+    WHERE YEAR(t.tanggal_transaksi) = {$currentYear} AND {$danaCondActive}
     GROUP BY t.id_jenis_pembayaran, jp.nama_jenis, MONTH(t.tanggal_transaksi)
     ORDER BY jp.nama_jenis, bulan
 ");
@@ -54,6 +85,7 @@ $monthlyJenisStats = $conn->query("
 $jenisStats = $conn->query("
     SELECT jp.nama_jenis, COALESCE(SUM(t.jumlah_pembayaran), 0) as total
     FROM transaksi t LEFT JOIN jenis_pembayaran jp ON t.id_jenis_pembayaran = jp.id
+    WHERE {$danaCondActive}
     GROUP BY t.id_jenis_pembayaran, jp.nama_jenis ORDER BY total DESC
 ");
 
@@ -61,12 +93,14 @@ $jenisStats = $conn->query("
 $recentTransaksi = $conn->query("
     SELECT t.*, 
         COALESCE(m.nama_muzaki, u.nama_upz, 'UMUM') as nama_muzaki, 
-        jp.nama_jenis, mp.nama_metode
+        jp.nama_jenis, sjp.nama_sub_jenis, mp.nama_metode
     FROM transaksi t
     LEFT JOIN muzaki m ON t.id_muzaki = m.id
     LEFT JOIN upz u ON t.id_upz = u.id
     LEFT JOIN jenis_pembayaran jp ON t.id_jenis_pembayaran = jp.id
+    LEFT JOIN sub_jenis_pembayaran sjp ON t.id_sub_jenis_pembayaran = sjp.id
     LEFT JOIN metode_pembayaran mp ON t.id_metode_pembayaran = mp.id
+    WHERE {$danaCondActive}
     ORDER BY t.tanggal_transaksi DESC, t.id DESC LIMIT 10
 ");
 
@@ -107,17 +141,21 @@ if ($jenisStats) {
 
 $kinerjaTahun = $currentYear;
 $kinerjaTarget = 0.0;
+$kinerjaTargetOff = 0.0;
 $kPenerimaan = kinerja_sql_and_transaksi_penerimaan($conn, 't');
 $kinerjaCapaian = (float) ($conn->query("SELECT COALESCE(SUM(t.jumlah_pembayaran),0) AS t FROM transaksi t WHERE YEAR(t.tanggal_transaksi) = {$kinerjaTahun} {$kPenerimaan}")->fetch_assoc()['t'] ?? 0);
-$kt = $conn->prepare('SELECT nominal_target FROM target_pengumpulan_tahunan WHERE tahun = ? LIMIT 1');
+$kinerjaCapaianOff = (float) ($conn->query("SELECT COALESCE(SUM(nominal),0) AS t FROM transaksi_off_balance WHERE YEAR(tanggal_transaksi) = {$kinerjaTahun}")->fetch_assoc()['t'] ?? 0);
+$kt = $conn->prepare('SELECT nominal_target, nominal_target_off_balance FROM target_pengumpulan_tahunan WHERE tahun = ? LIMIT 1');
 $kt->bind_param('i', $kinerjaTahun);
 $kt->execute();
 $ktr = $kt->get_result()->fetch_assoc();
 $kt->close();
 if ($ktr) {
     $kinerjaTarget = (float) $ktr['nominal_target'];
+    $kinerjaTargetOff = (float) ($ktr['nominal_target_off_balance'] ?? 0);
 }
 $kinerjaPct = $kinerjaTarget > 0 ? min(100, round(($kinerjaCapaian / $kinerjaTarget) * 100, 1)) : null;
+$kinerjaPctOff = $kinerjaTargetOff > 0 ? min(100, round(($kinerjaCapaianOff / $kinerjaTargetOff) * 100, 1)) : null;
 
 include __DIR__ . '/inc/header.php';
 ?>
@@ -125,9 +163,9 @@ include __DIR__ . '/inc/header.php';
 
 
 <!-- Stats Cards -->
-<div class="row">
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-primary">
+<div class="row dashboard-stats-row">
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-primary h-100 mb-0">
             <div class="inner">
                 <h3><?= number_format($totalTransaksi) ?></h3>
                 <p>Total Transaksi</p>
@@ -136,18 +174,18 @@ include __DIR__ . '/inc/header.php';
             <a href="<?= url('pages/transaksi/index.php') ?>" class="small-box-footer">Selengkapnya <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-success h-100 mb-0">
             <div class="inner">
-                <h3>Rp <?= number_format($totalPembayaran, 0, ',', '.') ?></h3>
-                <p>Total Pembayaran</p>
+                <h3 class="stat-currency-val" title="Rp <?= number_format($totalPembayaran, 0, ',', '.') ?>">Rp <?= number_format($totalPembayaran, 0, ',', '.') ?></h3>
+                <p>Total <?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan' : 'Penerimaan' ?></p>
             </div>
             <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
             <a href="<?= url('pages/transaksi/index.php') ?>" class="small-box-footer">Lihat Detail <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-info h-100 mb-0">
             <div class="inner">
                 <h3><?= number_format($totalMuzaki) ?></h3>
                 <p>Total Muzaki</p>
@@ -156,8 +194,8 @@ include __DIR__ . '/inc/header.php';
             <a href="<?= url('pages/muzaki/index.php') ?>" class="small-box-footer">Kelola Data <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
+    <div class="col-lg-3 col-6 mb-3">
+        <div class="small-box bg-warning h-100 mb-0">
             <div class="inner">
                 <h3><?= number_format($totalUPZ) ?></h3>
                 <p>Total UPZ</p>
@@ -168,48 +206,136 @@ include __DIR__ . '/inc/header.php';
     </div>
 </div>
 
-<!-- Target vs capaian tahun berjalan -->
+<!-- Perbandingan Penerimaan vs Pengumpulan (Tahun Berjalan & Akumulasi) -->
 <div class="row">
     <div class="col-12">
-        <div class="card card-outline card-danger shadow-sm">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-bullseye mr-2"></i>Kinerja Pengumpulan Tahun
-                    <?= $kinerjaTahun ?></h3>
+        <div class="card shadow-none" style="border: 1px solid #b8b8b8;">
+            <div class="card-header" style="border-bottom: 1px solid #b8b8b8;">
+                <h3 class="card-title font-weight-bold mb-0">
+                    <i class="fas fa-balance-scale mr-2 text-success"></i>Perbandingan Dana Penerimaan vs Pengumpulan (Tahun <?= $currentYear ?>)
+                </h3>
+            </div>
+            <div class="card-body py-3">
+                <div class="row">
+                    <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
+                        <div class="dana-compare-box <?= $activeDanaMode === 'penerimaan' ? 'is-active-mode' : '' ?>">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="compare-title"><i class="fas fa-hand-holding-usd mr-1 text-info"></i>1. Total Penerimaan (<?= $currentYear ?>)</span>
+                                    <?php if ($activeDanaMode === 'penerimaan'): ?>
+                                        <span class="badge badge-success">Mode Aktif</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="compare-value text-dark"><?= format_currency($yearPenerimaan) ?></div>
+                                <div class="small text-muted">Seluruh Jenis, Sub-Jenis &amp; Kategori Dana</div>
+                            </div>
+                            <div class="compare-meta">
+                                Akumulasi Semua Tahun: <strong class="text-dark"><?= format_currency($totalPenerimaanAll) ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-12 mb-3 mb-lg-0">
+                        <div class="dana-compare-box <?= $activeDanaMode === 'pengumpulan' ? 'is-active-mode' : '' ?>">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="compare-title"><i class="fas fa-filter mr-1 text-success"></i>2. Pengumpulan Murni (<?= $currentYear ?>)</span>
+                                    <?php if ($activeDanaMode === 'pengumpulan'): ?>
+                                        <span class="badge badge-success">Mode Aktif</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="compare-value text-success"><?= format_currency($yearPengumpulan) ?></div>
+                                <div class="small text-muted">Tanpa Titipan Penyaluran / BAZ-PROV-PUSAT / APBN/D</div>
+                            </div>
+                            <div class="compare-meta">
+                                Akumulasi Semua Tahun: <strong class="text-success"><?= format_currency($totalPengumpulanAll) ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-12">
+                        <div class="dana-compare-box">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="compare-title"><i class="fas fa-exchange-alt mr-1 text-warning"></i>3. Titipan Penyaluran (<?= $currentYear ?>)</span>
+                                    <span class="badge badge-warning">Selisih Dana</span>
+                                </div>
+                                <div class="compare-value text-warning"><?= format_currency($yearTitipan) ?></div>
+                                <div class="small text-muted">Titipan Penyaluran | BAZ-PROV-PUSAT | APBN/D</div>
+                            </div>
+                            <div class="compare-meta">
+                                Akumulasi Semua Tahun: <strong class="text-dark"><?= format_currency($totalTitipanAll) ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Target vs capaian tahun berjalan (On Balance & Off Balance Sheet) -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-none" style="border: 1px solid #b8b8b8;">
+            <div class="card-header" style="border-bottom: 1px solid #b8b8b8;">
+                <h3 class="card-title font-weight-bold mb-0"><i class="fas fa-bullseye mr-2 text-success"></i>Kinerja Pengumpulan Tahun <?= $kinerjaTahun ?> (On Balance &amp; Off Balance Sheet)</h3>
                 <div class="card-tools">
-                    <a href="<?= url('pages/kinerja/index.php?tahun=' . $kinerjaTahun) ?>"
-                        class="btn btn-sm btn-primary">
+                    <a href="<?= url('pages/off_balance/index.php?tahun=' . $kinerjaTahun) ?>" class="btn btn-sm btn-outline-info mr-1">
+                        <i class="fas fa-clipboard-list mr-1"></i>Kelola Off Balance
+                    </a>
+                    <a href="<?= url('pages/kinerja/index.php?tahun=' . $kinerjaTahun) ?>" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-cog mr-1"></i>Kelola Target
                     </a>
                 </div>
             </div>
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-4">
-                        <p class="text-muted mb-1 small">Target tahunan</p>
-                        <h4 class="mb-0">
-                            <?= $kinerjaTarget > 0 ? format_currency($kinerjaTarget) : '<span class="text-muted">Belum diatur</span>' ?>
-                        </h4>
-                    </div>
-                    <div class="col-md-4">
-                        <p class="text-muted mb-1 small">Capaian (kategori <strong>Penerimaan</strong>)</p>
-                        <h4 class="mb-0 text-success"><?= format_currency($kinerjaCapaian) ?></h4>
-                    </div>
-                    <div class="col-md-4">
-                        <?php if ($kinerjaPct !== null): ?>
-                            <p class="text-muted mb-1 small">Pencapaian</p>
-                            <div class="progress progress-lg">
-                                <div class="progress-bar <?= $kinerjaCapaian >= $kinerjaTarget ? 'bg-success' : 'bg-info' ?>"
-                                    style="width: <?= $kinerjaPct ?>%"><?= $kinerjaPct ?>%</div>
+            <div class="card-body py-3">
+                <div class="row">
+                    <!-- On Balance Sheet -->
+                    <div class="col-lg-6 mb-3 mb-lg-0">
+                        <div class="p-3 rounded h-100" style="border: 1px solid #b8b8b8;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="font-weight-bold"><i class="fas fa-university mr-1 text-success"></i>On Balance Sheet (Mode: <?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan Murni' : 'Total Penerimaan' ?>)</span>
+                                <span class="badge badge-success"><?= $kinerjaPct !== null ? $kinerjaPct . '%' : 'Target Belum Diatur' ?></span>
                             </div>
-                            <?php if ($kinerjaCapaian >= $kinerjaTarget): ?>
-                                <small class="text-success font-weight-bold">Target tercapai</small>
-                            <?php else: ?>
-                                <small class="text-muted">Sisa <?= format_currency($kinerjaTarget - $kinerjaCapaian) ?></small>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Target On Balance</small>
+                                    <strong style="font-size: 1.05rem;"><?= $kinerjaTarget > 0 ? format_currency($kinerjaTarget) : '<span class="text-muted">Belum diatur</span>' ?></strong>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <small class="text-muted d-block">Realisasi On Balance</small>
+                                    <strong class="text-success" style="font-size: 1.05rem;"><?= format_currency($kinerjaCapaian) ?></strong>
+                                </div>
+                            </div>
+                            <?php if ($kinerjaPct !== null): ?>
+                                <div class="progress mt-2" style="height: 8px; border: 1px solid #b8b8b8;">
+                                    <div class="progress-bar bg-success" style="width: <?= $kinerjaPct ?>%"></div>
+                                </div>
                             <?php endif; ?>
-                        <?php else: ?>
-                            <p class="text-muted small mb-0">Atur target di halaman Kinerja Pengumpulan untuk melihat
-                                persentase.</p>
-                        <?php endif; ?>
+                        </div>
+                    </div>
+                    <!-- Off Balance Sheet -->
+                    <div class="col-lg-6">
+                        <div class="p-3 rounded h-100" style="border: 1px solid #b8b8b8;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="font-weight-bold"><i class="fas fa-clipboard-list mr-1 text-primary"></i>Off Balance Sheet (UPZ / Masjid / Desa)</span>
+                                <span class="badge badge-info"><?= $kinerjaPctOff !== null ? $kinerjaPctOff . '%' : 'Target Belum Diatur' ?></span>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Target Off Balance</small>
+                                    <strong style="font-size: 1.05rem;"><?= $kinerjaTargetOff > 0 ? format_currency($kinerjaTargetOff) : '<span class="text-muted">Belum diatur</span>' ?></strong>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <small class="text-muted d-block">Realisasi Off Balance</small>
+                                    <strong class="text-primary" style="font-size: 1.05rem;"><?= format_currency($kinerjaCapaianOff) ?></strong>
+                                </div>
+                            </div>
+                            <?php if ($kinerjaPctOff !== null): ?>
+                                <div class="progress mt-2" style="height: 8px; border: 1px solid #b8b8b8;">
+                                    <div class="progress-bar bg-primary" style="width: <?= $kinerjaPctOff ?>%"></div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>

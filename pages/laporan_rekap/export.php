@@ -106,6 +106,12 @@ if (!empty($id_kategori_arr)) {
     $where[] = "(" . implode(" OR ", $cat_conditions) . ")";
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+if ($danaCond !== '1=1') {
+    $where[] = $danaCond;
+}
+
 $where_sql = "WHERE " . implode(' AND ', $where);
 
 // Metadata for Title/Header

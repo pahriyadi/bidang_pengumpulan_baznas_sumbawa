@@ -213,6 +213,39 @@ function deleteReminder(id) {
 }
 
 // ==========================================
+// GLOBAL DANA MODE SWITCHER (Penerimaan vs Pengumpulan)
+// ==========================================
+function switchGlobalDanaMode(mode) {
+    if (typeof window.showPreloader === 'function') {
+        window.showPreloader();
+    }
+    $.ajax({
+        url: '',
+        method: 'POST',
+        data: {
+            action: 'set_dana_mode',
+            dana_mode: mode
+        },
+        dataType: 'json',
+        success: function(res) {
+            var currentUrl = new URL(window.location.href);
+            if (currentUrl.searchParams.has('dana_mode')) {
+                currentUrl.searchParams.set('dana_mode', mode);
+            }
+            if (currentUrl.searchParams.has('set_dana_mode')) {
+                currentUrl.searchParams.delete('set_dana_mode');
+            }
+            window.location.href = currentUrl.toString();
+        },
+        error: function() {
+            var currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('set_dana_mode', mode);
+            window.location.href = currentUrl.toString();
+        }
+    });
+}
+
+// ==========================================
 // DARK / LIGHT MODE CONTROLLER (BAZNAS SIM)
 // ==========================================
 function toggleDarkMode() {

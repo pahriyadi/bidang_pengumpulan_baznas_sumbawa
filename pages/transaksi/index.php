@@ -46,7 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['draw'])) {
                  LEFT JOIN sumber_rekening sr ON t.id_sumber_rekening = sr.id";
     
     // Search condition
-    $where = " WHERE 1=1";
+    $activeDanaMode = get_dana_mode();
+    $danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+    $where = " WHERE {$danaCond}";
     $searchParams = [];
     $searchTypes = "";
     if ($searchValue !== '') {
@@ -67,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['draw'])) {
         }
     }
     
-    // Get total records without filtering
-    $totalRecords = $conn->query("SELECT COUNT(*) FROM transaksi")->fetch_row()[0] ?? 0;
+    // Get total records without search filtering (respecting dana mode)
+    $totalRecords = $conn->query("SELECT COUNT(*) FROM transaksi t WHERE {$danaCond}")->fetch_row()[0] ?? 0;
     
     // Get total records with filtering
     $filteredQuery = "SELECT COUNT(*) " . $sqlFrom . $where;

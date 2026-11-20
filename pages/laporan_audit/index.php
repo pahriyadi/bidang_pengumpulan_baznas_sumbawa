@@ -147,6 +147,12 @@ if (!empty($id_kategori_upz_arr)) {
     }
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+if ($danaCond !== '1=1') {
+    $where[] = $danaCond;
+}
+
 $where_sql = implode(' AND ', $where);
 
 // Queries for dropdowns
@@ -623,6 +629,7 @@ include __DIR__ . '/../../inc/header.php';
                     <?= csrf_field() ?>
                     <input type="hidden" name="start_date" value="<?= $start_date ?>">
                     <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                    <input type="hidden" name="dana_mode" value="<?= htmlspecialchars($activeDanaMode) ?>">
                     <?php foreach ($id_upz_arr as $upz_id): ?>
                     <input type="hidden" name="id_upz[]" value="<?= htmlspecialchars($upz_id) ?>">
                     <?php endforeach; ?>
@@ -660,9 +667,9 @@ include __DIR__ . '/../../inc/header.php';
         <div class="card flat-card shadow-none border" style="border: 1px solid #b8b8b8 !important;">
             <div class="card-body">
                 <div class="alert alert-info alert-excel mb-4 shadow-none" style="background-color:rgba(23,162,184,0.05); color:#17a2b8; border:1px solid #17a2b8;">
-                    <h5><i class="icon fas fa-info-circle"></i> Ringkasan Audit</h5>
+                    <h5><i class="icon fas fa-info-circle"></i> Ringkasan Audit (Mode: <strong><?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan Murni' : 'Total Penerimaan' ?></strong>)</h5>
                     Total Transaksi: <strong><?= count($transactions) ?></strong> data<br>
-                    Total Penerimaan Ter-Audit (Rp): <strong class="currency-display h4 mb-0"><?= format_currency($total_nominal) ?></strong>
+                    Total <?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan' : 'Penerimaan' ?> Ter-Audit (Rp): <strong class="currency-display h4 mb-0"><?= format_currency($total_nominal) ?></strong>
                 </div>
 
                 <div class="table-responsive">

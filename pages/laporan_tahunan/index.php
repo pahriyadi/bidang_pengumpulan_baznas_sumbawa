@@ -101,6 +101,12 @@ if (!empty($id_kategori_arr)) {
     $where[] = "(" . implode(" OR ", $cat_conditions) . ")";
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+if ($danaCond !== '1=1') {
+    $where[] = $danaCond;
+}
+
 $where_sql = "WHERE " . implode(' AND ', $where);
 
 // --- Dropdowns Data ---
@@ -481,6 +487,7 @@ include __DIR__ . '/../../inc/header.php';
                     <?= csrf_field() ?>
                     <input type="hidden" name="start_date" value="<?= $start_date ?>">
                     <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                    <input type="hidden" name="dana_mode" value="<?= htmlspecialchars($activeDanaMode) ?>">
                     <?php foreach ($id_jenis_arr as $jenis_id): ?>
                     <input type="hidden" name="id_jenis[]" value="<?= htmlspecialchars($jenis_id) ?>">
                     <?php endforeach; ?>

@@ -1,23 +1,38 @@
-<nav class="main-header navbar navbar-expand navbar-white navbar-light">
-    <ul class="navbar-nav">
+<nav class="main-header navbar navbar-expand navbar-white navbar-light topbar-compact">
+    <ul class="navbar-nav align-items-center">
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
-        <li class="nav-item d-none d-sm-inline-block">
+        <li class="nav-item d-none d-lg-inline-block">
             <a href="<?= url('index.php') ?>" class="nav-link">Beranda</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
             <a class="nav-link text-success font-weight-bold" href="#" data-toggle="modal" data-target="#whatsNewModal" style="cursor: pointer;">
-                <i class="fas fa-bullhorn mr-1 text-success"></i>Apa yang Baru?
+                <i class="fas fa-bullhorn mr-1 text-success"></i><span>Apa yang Baru?</span>
             </a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
             <a class="nav-link text-dark font-weight-bold" href="javascript:void(0)" onclick="toggleAiCopilot()" title="Tanya Amil Virtual (Alt + A)" style="cursor: pointer;">
-                <i class="fas fa-robot mr-1 text-success"></i>Tanya AI
+                <i class="fas fa-robot mr-1 text-success"></i><span>Tanya AI</span>
             </a>
         </li>
+        <?php $currentDanaMode = get_dana_mode(); ?>
+        <li class="nav-item d-flex align-items-center ml-1">
+            <div class="dana-mode-switcher" role="group" aria-label="Mode Tampilan Dana" title="Pilih Basis Data: Penerimaan (Semua Dana) vs Pengumpulan (Tanpa Titipan Penyaluran)">
+                <button type="button"
+                    onclick="switchGlobalDanaMode('penerimaan')"
+                    class="dana-mode-btn <?= $currentDanaMode === 'penerimaan' ? 'active' : '' ?>">
+                    <i class="fas fa-hand-holding-usd mr-1"></i>Penerimaan
+                </button>
+                <button type="button"
+                    onclick="switchGlobalDanaMode('pengumpulan')"
+                    class="dana-mode-btn <?= $currentDanaMode === 'pengumpulan' ? 'active' : '' ?>">
+                    <i class="fas fa-filter mr-1"></i>Pengumpulan
+                </button>
+            </div>
+        </li>
     </ul>
-    <ul class="navbar-nav ml-auto">
+    <ul class="navbar-nav ml-auto align-items-center">
         <?php
         // Fetch active reminders and notes count for the logged-in user
         $topbarConn = db();
@@ -54,11 +69,11 @@
         ?>
 
         <!-- Dropdown Catatan (Notes) -->
-        <li class="nav-item dropdown mr-1">
-            <a class="nav-link" data-toggle="dropdown" href="#" title="Catatan">
-                <i class="far fa-sticky-note" style="font-size: 1.1rem;"></i>
+        <li class="nav-item dropdown">
+            <a class="nav-link topbar-icon-link" data-toggle="dropdown" href="#" title="Catatan">
+                <i class="far fa-sticky-note"></i>
                 <?php if ($totalActiveNotesCount > 0): ?>
-                    <span class="badge badge-success navbar-badge" style="font-size: 0.6rem; top: 4px; right: 2px; padding: 2px 4px; border-radius: 50%;"><?= $totalActiveNotesCount ?></span>
+                    <span class="badge badge-success topbar-count-badge"><?= $totalActiveNotesCount ?></span>
                 <?php endif; ?>
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0" style="border: 1px solid #b8b8b8 !important; box-shadow: none !important; border-radius: 4px; width: 320px;">
@@ -95,11 +110,11 @@
         </li>
 
         <!-- Dropdown Pengingat (Reminders) -->
-        <li class="nav-item dropdown mr-2">
-            <a class="nav-link" data-toggle="dropdown" href="#" title="Pengingat">
-                <i class="far fa-bell" style="font-size: 1.1rem;"></i>
+        <li class="nav-item dropdown">
+            <a class="nav-link topbar-icon-link" data-toggle="dropdown" href="#" title="Pengingat">
+                <i class="far fa-bell"></i>
                 <?php if ($totalActiveRemindersCount > 0): ?>
-                    <span class="badge badge-warning navbar-badge" style="font-size: 0.6rem; top: 4px; right: 2px; padding: 2px 4px; border-radius: 50%; color: #333; background-color: #ffc107;"><?= $totalActiveRemindersCount ?></span>
+                    <span class="badge badge-warning topbar-count-badge"><?= $totalActiveRemindersCount ?></span>
                 <?php endif; ?>
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0" style="border: 1px solid #b8b8b8 !important; box-shadow: none !important; border-radius: 4px; width: 320px;">
@@ -147,17 +162,17 @@
         </li>
 
         <!-- Mode Gelap / Terang (Dark / Light Mode) -->
-        <li class="nav-item mr-1">
-            <a class="nav-link" href="javascript:void(0)" id="btn-theme-toggle" onclick="toggleDarkMode()" title="Ganti Mode Gelap / Terang" style="cursor: pointer;">
-                <i class="fas fa-moon" id="theme-toggle-icon" style="font-size: 1.1rem;"></i>
+        <li class="nav-item">
+            <a class="nav-link topbar-icon-link" href="javascript:void(0)" id="btn-theme-toggle" onclick="toggleDarkMode()" title="Ganti Mode Gelap / Terang" style="cursor: pointer;">
+                <i class="fas fa-moon" id="theme-toggle-icon"></i>
             </a>
         </li>
 
         <li class="nav-item dropdown">
-            <a class="nav-link" data-toggle="dropdown" href="#">
+            <a class="nav-link topbar-user-link d-flex align-items-center" data-toggle="dropdown" href="#">
                 <i class="fas fa-user-circle mr-1"></i>
-                <?= htmlspecialchars($user['full_name'] ?? 'Pengguna') ?>
-                <small class="badge badge-primary ml-1"><?= htmlspecialchars(strtoupper($user['role'] ?? '')) ?></small>
+                <span class="topbar-user-name"><?= htmlspecialchars($user['full_name'] ?? 'Pengguna') ?></span>
+                <small class="badge badge-primary ml-1 topbar-role-badge"><?= htmlspecialchars(strtoupper($user['role'] ?? '')) ?></small>
             </a>
             <div class="dropdown-menu dropdown-menu-right">
                 <a href="<?= url('pages/profile/index.php') ?>" class="dropdown-item">

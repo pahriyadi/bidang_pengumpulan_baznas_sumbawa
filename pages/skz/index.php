@@ -221,26 +221,20 @@ $skzHasCustomTtd = !empty($skzTtdUrl);
 include __DIR__ . '/../../inc/header.php';
 ?>
 
-<div class="row mb-3">
-    <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
-        <div>
-            <h4 class="mb-1 font-weight-bold" style="color: #0d9f4f;"><i class="fas fa-file-contract mr-2"></i>Surat Ketetapan Zakat (SKZ) & BSZIS</h4>
-            <p class="text-muted mb-0" style="font-size: 0.9rem;">Penerbitan surat ketetapan zakat dan bukti setor zakat/infak untuk rekanan proyek dinas & instansi.</p>
-        </div>
-        <div class="mt-2 mt-sm-0">
-            <button type="button" class="btn btn-outline-secondary mr-2" data-toggle="modal" data-target="#settingsModal" title="Pengaturan Nama Pimpinan & Jabatan">
+<div class="card shadow-none" style="border: 1px solid #b8b8b8;">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap" style="border-bottom: 1px solid #dee2e6;">
+        <h3 class="card-title font-weight-bold text-dark mb-0"><i class="fas fa-list-alt mr-2 text-success"></i>Daftar Surat Ketetapan &amp; Bukti Setor</h3>
+        <div class="card-tools ml-auto mt-2 mt-sm-0">
+            <a href="<?= url('pages/skz/laporan.php') ?>" class="btn btn-outline-info btn-sm mr-1">
+                <i class="fas fa-chart-bar mr-1"></i>Laporan SKZ &amp; BSZIS
+            </a>
+            <button type="button" class="btn btn-outline-secondary btn-sm mr-1" data-toggle="modal" data-target="#settingsModal" title="Pengaturan Nama Pimpinan & Jabatan">
                 <i class="fas fa-user-cog mr-1"></i>Pengaturan Pimpinan
             </button>
-            <a href="<?= url('pages/skz/form.php') ?>" class="btn btn-success">
-                <i class="fas fa-plus-circle mr-1"></i>Buat SKZ & BSZIS Baru
+            <a href="<?= url('pages/skz/form.php') ?>" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-plus-circle mr-1"></i>Buat SKZ &amp; BSZIS Baru
             </a>
         </div>
-    </div>
-</div>
-
-<div class="card shadow-none" style="border: 1px solid #b8b8b8;">
-    <div class="card-header bg-white" style="border-bottom: 1px solid #dee2e6;">
-        <h3 class="card-title font-weight-bold text-dark"><i class="fas fa-list-alt mr-2 text-success"></i>Daftar Surat Ketetapan & Bukti Setor</h3>
     </div>
     <div class="card-body">
         <div class="table-responsive">

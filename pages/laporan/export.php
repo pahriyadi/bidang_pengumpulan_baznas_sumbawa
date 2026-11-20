@@ -129,6 +129,12 @@ if (!empty($id_kategori_upz_arr)) {
     }
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+if ($danaCond !== '1=1') {
+    $where[] = $danaCond;
+}
+
 $where_sql = implode(' AND ', $where);
 
 // Queries for Kategori Dana Mapping

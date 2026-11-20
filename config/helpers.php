@@ -439,3 +439,195 @@ function parse_kategori_dana_ids($val): array
     
     return [];
 }
+
+// ==================== PENERIMAAN VS PENGUMPULAN ENGINE ====================
+
+/**
+ * Mengambil mode tampilan dana global ('penerimaan' atau 'pengumpulan').
+ * Tersimpan di $_SESSION['dana_mode'] dan dapat diubah dari Topbar atau parameter GET/POST.
+ */
+function get_dana_mode(): string
+{
+    ensure_session_started();
+
+    $reqMode = strtolower(trim((string)($_POST['dana_mode'] ?? $_GET['dana_mode'] ?? $_GET['set_dana_mode'] ?? '')));
+    if (in_array($reqMode, ['penerimaan', 'pengumpulan'], true)) {
+        $_SESSION['dana_mode'] = $reqMode;
+        return $reqMode;
+    }
+
+    if (!empty($_SESSION['dana_mode']) && in_array($_SESSION['dana_mode'], ['penerimaan', 'pengumpulan'], true)) {
+        return $_SESSION['dana_mode'];
+    }
+
+    $_SESSION['dana_mode'] = 'penerimaan';
+    return 'penerimaan';
+}
+
+/**
+ * Mengambil daftar ID Jenis Pembayaran dan Sub-Jenis Pembayaran yang dikecualikan dari "Pengumpulan"
+ * (yaitu Titipan Penyaluran / Dana Titipan BAZNAS Prov/Pusat / APBN/D).
+ * Menggabungkan pendeteksian otomatis berbasis nama serta pengaturan kustom di website_settings.
+ */
+function get_pengumpulan_excluded_ids(?mysqli $conn = null): array
+{
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $conn = $conn ?: db();
+    $excludedJenisIds = [];
+    $excludedSubIds = [];
+
+    // 1. Cek pengaturan kustom dari website_settings jika pernah disetel Admin
+    $customSubSetting = get_setting('pengumpulan_excluded_sub_ids', '');
+    $customJenisSetting = get_setting('pengumpulan_excluded_jenis_ids', '');
+
+    if ($customSubSetting !== '') {
+        $decoded = json_decode($customSubSetting, true);
+        if (is_array($decoded)) {
+            $excludedSubIds = array_values(array_filter(array_map('intval', $decoded)));
+        }
+    }
+    if ($customJenisSetting !== '') {
+        $decodedJ = json_decode($customJenisSetting, true);
+        if (is_array($decodedJ)) {
+            $excludedJenisIds = array_values(array_filter(array_map('intval', $decodedJ)));
+        }
+    }
+
+    // 2. Deteksi otomatis berbasis nama pada tabel jenis_pembayaran & sub_jenis_pembayaran
+    // Mencakup: "Titipan Penyaluran", "Titipan Penyaluran | BAZ-PROV-PUSAT | APBN/D", "Dana Titipan", "Infak Penyaluran (Titipan)"
+    try {
+        $resJ = $conn->query("SELECT id, nama_jenis FROM jenis_pembayaran");
+        if ($resJ) {
+            while ($r = $resJ->fetch_assoc()) {
+                $nm = strtolower(trim($r['nama_jenis']));
+                if (
+                    strpos($nm, 'titipan penyaluran') !== false ||
+                    strpos($nm, 'dana titipan') !== false ||
+                    (strpos($nm, 'titipan') !== false && strpos($nm, 'penyaluran') !== false)
+                ) {
+                    $excludedJenisIds[] = (int)$r['id'];
+                }
+            }
+        }
+
+        $resS = $conn->query("SELECT id, id_jenis_pembayaran, nama_sub_jenis FROM sub_jenis_pembayaran");
+        if ($resS) {
+            while ($r = $resS->fetch_assoc()) {
+                $nm = strtolower(trim($r['nama_sub_jenis']));
+                $jid = (int)$r['id_jenis_pembayaran'];
+                if (
+                    in_array($jid, $excludedJenisIds, true) ||
+                    strpos($nm, 'titipan penyaluran') !== false ||
+                    strpos($nm, 'dana titipan') !== false ||
+                    strpos($nm, 'baz-prov-pusat') !== false ||
+                    strpos($nm, 'apbn/d') !== false ||
+                    (strpos($nm, 'titipan') !== false && strpos($nm, 'penyaluran') !== false)
+                ) {
+                    $excludedSubIds[] = (int)$r['id'];
+                }
+            }
+        }
+    } catch (\Throwable $e) {
+        // silent fail-safe
+    }
+
+    $cached = [
+        'jenis_ids' => array_values(array_unique($excludedJenisIds)),
+        'sub_ids'   => array_values(array_unique($excludedSubIds))
+    ];
+    return $cached;
+}
+
+/**
+ * Menghasilkan kondisi SQL (tanpa kata WHERE/AND di depan, misal "(...)") untuk memfilter transaksi
+ * berdasarkan mode 'penerimaan' atau 'pengumpulan'.
+ * - Penerimaan: seluruh jenis, sub-jenis, dan kategori dana ("1=1")
+ * - Pengumpulan: seluruh jenis & sub-jenis KECUALI Titipan Penyaluran
+ */
+function get_dana_mode_sql_condition(?string $mode = null, string $tableAlias = 't', ?mysqli $conn = null): string
+{
+    $mode = $mode !== null ? strtolower(trim($mode)) : get_dana_mode();
+    if ($mode !== 'pengumpulan') {
+        return '1=1';
+    }
+
+    $conn = $conn ?: db();
+    $excl = get_pengumpulan_excluded_ids($conn);
+    $prefix = $tableAlias !== '' ? ($tableAlias . '.') : '';
+
+    $conds = [];
+    if (!empty($excl['jenis_ids'])) {
+        $jList = implode(',', array_map('intval', $excl['jenis_ids']));
+        $conds[] = "({$prefix}id_jenis_pembayaran IS NULL OR {$prefix}id_jenis_pembayaran NOT IN ({$jList}))";
+    }
+    if (!empty($excl['sub_ids'])) {
+        $sList = implode(',', array_map('intval', $excl['sub_ids']));
+        $conds[] = "({$prefix}id_sub_jenis_pembayaran IS NULL OR {$prefix}id_sub_jenis_pembayaran NOT IN ({$sList}))";
+    }
+
+    if (empty($conds)) {
+        return '1=1';
+    }
+
+    return '(' . implode(' AND ', $conds) . ')';
+}
+
+/**
+ * Menghasilkan kondisi SQL untuk transaksi yang TERMASUK Titipan Penyaluran (Selisih Penerimaan - Pengumpulan).
+ */
+function get_titipan_penyaluran_sql_condition(string $tableAlias = 't', ?mysqli $conn = null): string
+{
+    $conn = $conn ?: db();
+    $excl = get_pengumpulan_excluded_ids($conn);
+    $prefix = $tableAlias !== '' ? ($tableAlias . '.') : '';
+
+    $conds = [];
+    if (!empty($excl['jenis_ids'])) {
+        $jList = implode(',', array_map('intval', $excl['jenis_ids']));
+        $conds[] = "{$prefix}id_jenis_pembayaran IN ({$jList})";
+    }
+    if (!empty($excl['sub_ids'])) {
+        $sList = implode(',', array_map('intval', $excl['sub_ids']));
+        $conds[] = "{$prefix}id_sub_jenis_pembayaran IN ({$sList})";
+    }
+
+    if (empty($conds)) {
+        return '1=0';
+    }
+
+    return '(' . implode(' OR ', $conds) . ')';
+}
+
+/**
+ * Mengecek apakah satu baris transaksi (array) merupakan transaksi Pengumpulan (bukan Titipan Penyaluran).
+ */
+function is_transaksi_pengumpulan(array $row, ?mysqli $conn = null): bool
+{
+    $excl = get_pengumpulan_excluded_ids($conn);
+    $jid = (int)($row['id_jenis_pembayaran'] ?? $row['id_jenis'] ?? 0);
+    $sid = (int)($row['id_sub_jenis_pembayaran'] ?? $row['id_sub_jenis'] ?? 0);
+
+    if ($jid > 0 && in_array($jid, $excl['jenis_ids'], true)) {
+        return false;
+    }
+    if ($sid > 0 && in_array($sid, $excl['sub_ids'], true)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Label ramah pengguna untuk mode dana yang sedang aktif.
+ */
+function get_dana_mode_label(?string $mode = null): string
+{
+    $mode = $mode !== null ? strtolower(trim($mode)) : get_dana_mode();
+    if ($mode === 'pengumpulan') {
+        return 'Pengumpulan Murni (Tanpa Titipan Penyaluran)';
+    }
+    return 'Total Penerimaan (Semua Dana & Titipan)';
+}

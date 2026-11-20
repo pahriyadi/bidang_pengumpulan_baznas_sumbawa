@@ -126,6 +126,12 @@ if (!empty($id_kategori_upz_arr)) {
     }
 }
 
+$activeDanaMode = get_dana_mode();
+$danaCond = get_dana_mode_sql_condition($activeDanaMode, 't', $conn);
+if ($danaCond !== '1=1') {
+    $where[] = $danaCond;
+}
+
 $where_sql = implode(' AND ', $where);
 
 // Queries for dropdowns
@@ -165,11 +171,19 @@ foreach ($jenisList as $j) {
     $columnTotals[$j['id']] = 0;
 }
 $total_nominal = 0;
+$total_pengumpulan_murni = 0;
+$total_titipan_penyaluran = 0;
 
 while ($row = $data->fetch_assoc()) {
-    $total_nominal += (float)$row['jumlah_pembayaran'];
+    $amt = (float)$row['jumlah_pembayaran'];
+    $total_nominal += $amt;
+    if (is_transaksi_pengumpulan($row, $conn)) {
+        $total_pengumpulan_murni += $amt;
+    } else {
+        $total_titipan_penyaluran += $amt;
+    }
     if (isset($columnTotals[$row['id_jenis_pembayaran']])) {
-        $columnTotals[$row['id_jenis_pembayaran']] += (float)$row['jumlah_pembayaran'];
+        $columnTotals[$row['id_jenis_pembayaran']] += $amt;
     }
     $transactions[] = $row;
 }
@@ -508,6 +522,7 @@ include __DIR__ . '/../../inc/header.php';
                     <?= csrf_field() ?>
                     <input type="hidden" name="start_date" value="<?= $start_date ?>">
                     <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                    <input type="hidden" name="dana_mode" value="<?= htmlspecialchars($activeDanaMode) ?>">
                     <?php foreach ($id_jenis_arr as $jenis_id): ?>
                     <input type="hidden" name="id_jenis[]" value="<?= htmlspecialchars($jenis_id) ?>">
                     <?php endforeach; ?>
@@ -547,9 +562,19 @@ include __DIR__ . '/../../inc/header.php';
         <div class="card flat-card shadow-none">
             <div class="card-body">
                 <div class="alert alert-info alert-excel mb-4 shadow-none">
-                    <h5><i class="icon fas fa-info-circle"></i> Ringkasan</h5>
-                    Total Transaksi: <strong><?= count($transactions) ?></strong> data<br>
-                    Total Penerimaan (Rp): <strong class="currency-display h4 mb-0"><?= format_currency($total_nominal) ?></strong>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h5 class="mb-1"><i class="icon fas fa-info-circle"></i> Ringkasan (Mode: <strong><?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan Murni' : 'Total Penerimaan' ?></strong>)</h5>
+                            Total Transaksi: <strong><?= count($transactions) ?></strong> data<br>
+                            Total <?= $activeDanaMode === 'pengumpulan' ? 'Pengumpulan Murni' : 'Penerimaan' ?> (Rp): <strong class="currency-display h4 mb-0"><?= format_currency($total_nominal) ?></strong>
+                        </div>
+                        <?php if ($activeDanaMode === 'penerimaan' && $total_titipan_penyaluran > 0): ?>
+                        <div class="text-md-right mt-2 mt-md-0 small">
+                            <div>Pengumpulan Murni (Tanpa Titipan): <strong><?= format_currency($total_pengumpulan_murni) ?></strong></div>
+                            <div>Titipan Penyaluran (BAZ-PROV-PUSAT / APBN/D): <strong><?= format_currency($total_titipan_penyaluran) ?></strong></div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -820,6 +845,7 @@ include __DIR__ . '/../../inc/header.php';
                     <?= csrf_field() ?>
                     <input type="hidden" name="start_date" value="<?= $start_date ?>">
                     <input type="hidden" name="end_date" value="<?= $end_date ?>">
+                    <input type="hidden" name="dana_mode" value="<?= htmlspecialchars($activeDanaMode) ?>">
                     <?php foreach ($id_jenis_arr as $jenis_id): ?>
                     <input type="hidden" name="id_jenis[]" value="<?= htmlspecialchars($jenis_id) ?>">
                     <?php endforeach; ?>
