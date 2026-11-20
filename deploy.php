@@ -26,6 +26,14 @@ $github_event  = isset($_SERVER['HTTP_X_GITHUB_EVENT']) ? $_SERVER['HTTP_X_GITHU
 $manual_key = isset($_GET['key']) ? $_GET['key'] : '';
 $is_valid_manual = ($manual_key !== '' && hash_equals($webhook_secret, $manual_key));
 
+// Fitur diagnostik log error terakhir (hanya dengan secret key yang valid)
+if ($is_valid_manual && isset($_GET['diag']) && $_GET['diag'] === 'error_log') {
+    $err_file = __DIR__ . '/logs/error.log';
+    $lines = is_file($err_file) ? array_slice(file($err_file), -30) : ['No error.log found'];
+    echo json_encode(['status' => 'ok', 'php_version' => PHP_VERSION, 'last_errors' => $lines], JSON_PRETTY_PRINT);
+    exit;
+}
+
 // 2. Validasi HMAC SHA-256 dari GitHub Webhook
 $is_valid_webhook = false;
 if (!empty($signature_256) && !empty($raw_payload)) {
