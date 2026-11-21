@@ -6,16 +6,6 @@
         <li class="nav-item d-none d-lg-inline-block">
             <a href="<?= url('index.php') ?>" class="nav-link">Beranda</a>
         </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a class="nav-link text-success font-weight-bold" href="#" data-toggle="modal" data-target="#whatsNewModal" style="cursor: pointer;">
-                <i class="fas fa-bullhorn mr-1 text-success"></i><span>Apa yang Baru?</span>
-            </a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-            <a class="nav-link text-dark font-weight-bold" href="javascript:void(0)" onclick="toggleAiCopilot()" title="Tanya Amil Virtual (Alt + A)" style="cursor: pointer;">
-                <i class="fas fa-robot mr-1 text-success"></i><span>Tanya AI</span>
-            </a>
-        </li>
         <?php $currentDanaMode = get_dana_mode(); ?>
         <li class="nav-item d-flex align-items-center ml-1">
             <div class="dana-mode-switcher" role="group" aria-label="Mode Tampilan Dana" title="Pilih Basis Data: Penerimaan (Semua Dana) vs Pengumpulan (Tanpa Titipan Penyaluran)">
