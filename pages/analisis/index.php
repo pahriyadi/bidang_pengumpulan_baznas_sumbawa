@@ -459,6 +459,9 @@ body.dark-mode .exec-kpi-card .kpi-sub {
                             <a href="<?= url('pages/analisis/perbandingan.php') ?>" class="btn btn-outline-info btn-sm mr-1">
                                 <i class="fas fa-balance-scale mr-1"></i>Perbandingan
                             </a>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mr-1" data-proto="14" title="Putar ulang animasi Skeleton & Reveal">
+                                <i class="fas fa-magic mr-1"></i>Reveal
+                            </button>
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print()">
                                 <i class="fas fa-print mr-1"></i>Cetak Presentasi
                             </button>

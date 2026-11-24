@@ -21,7 +21,7 @@
 <script src="<?= asset('adminlte/plugins/sweetalert2/sweetalert2.min.js') ?>"></script>
 <script src="<?= asset('adminlte/plugins/select2/js/select2.full.min.js') ?>"></script>
 <script src="<?= asset('adminlte/dist/js/adminlte.min.js') ?>"></script>
-<script src="<?= asset('js/app.js') ?>"></script>
+<script src="<?= asset('js/app.js') ?>?v=<?= @filemtime(__DIR__ . '/../assets/js/app.js') ?: '2' ?>"></script>
 
 <!-- Modal Tambah Catatan -->
 <div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog" aria-hidden="true">

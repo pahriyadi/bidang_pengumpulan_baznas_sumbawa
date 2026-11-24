@@ -214,6 +214,11 @@ include __DIR__ . '/inc/header.php';
                 <h3 class="card-title font-weight-bold mb-0">
                     <i class="fas fa-balance-scale mr-2 text-success"></i>Perbandingan Dana Penerimaan vs Pengumpulan (Tahun <?= $currentYear ?>)
                 </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-outline-success btn-xs" data-proto="14" title="Putar ulang animasi Skeleton & Reveal">
+                        <i class="fas fa-magic mr-1"></i>Animasi Reveal
+                    </button>
+                </div>
             </div>
             <div class="card-body py-3">
                 <div class="row">

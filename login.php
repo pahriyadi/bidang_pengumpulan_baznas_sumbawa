@@ -385,6 +385,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 <script src="<?= asset('adminlte/plugins/jquery/jquery.min.js') ?>"></script>
 <script src="<?= asset('adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= asset('adminlte/plugins/sweetalert2/sweetalert2.min.js') ?>"></script>
+<script src="<?= asset('js/app.js') ?>?v=<?= @filemtime(__DIR__ . '/assets/js/app.js') ?: '2' ?>"></script>
 <?php if ($isGoogleAuthActive): ?>
 <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleSignIn()"></script>
 <script>

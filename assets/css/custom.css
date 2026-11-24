@@ -2829,7 +2829,7 @@ body.dark-mode {
     }
 }
 
-@media (max-width: 576px) {
+    @media (max-width: 576px) {
     .dana-mode-switcher .dana-mode-btn {
         font-size: 0.7rem;
         padding: 2px 6px;
@@ -2837,4 +2837,450 @@ body.dark-mode {
     .dana-mode-switcher .dana-mode-btn i {
         display: none;
     }
+}
+
+/* ==============================================================
+   UNIVERSAL SKELETON LOADER & REVEAL REMIX (p14 Motion Engine)
+   Adapted to Paper White & Paper Dark Design System
+   ============================================================== */
+:root {
+    /* Mapped --stage-* tokens to SIM BAZNAS Paper White tokens */
+    --stage-bg: #f4f6f9;
+    --stage-fg: #333333;
+    --stage-muted: #5e6073;
+    --stage-border: #b8b8b8;
+    --stage-surface: #ffffff;
+    --stage-accent: var(--baznas-green, #0d9f4f);
+    --stage-on-accent: #ffffff;
+
+    /* Core p14 component variables & motion tokens (preserved exact timings & easings) */
+    --text: var(--stage-fg);
+    --animate-bg: rgba(243, 243, 243, 0.9);
+    --animate-bg-tint: #bfc0cb;
+    --animate-bg-hover: #eae9e9;
+    --animate-text: #17181c;
+    --muted: var(--stage-muted);
+    --material-bg: var(--stage-surface);
+    --font-sans: var(--font-primary, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+    --duration-slow: 400ms;
+    --ease-in-out: ease-in-out;
+    --blur-small: 2px;
+    --p14-pulse-dur: 1000ms;
+    --p14-pulse-count: 1;
+    --p14-pulse-min: 0.5;
+    --p14-reveal-dur: var(--duration-slow);
+    --p14-reveal-blur: var(--blur-small);
+    --p14-reveal-ease: var(--ease-in-out);
+    --p14-skeleton-color: #eeeeee;
+}
+
+html.dark-mode,
+body.dark-mode,
+html[data-theme="dark"] {
+    /* Mapped --stage-* tokens to SIM BAZNAS Paper Dark tokens */
+    --stage-bg: #14171a;
+    --stage-fg: #e5e7eb;
+    --stage-muted: #9ca3af;
+    --stage-border: #374151;
+    --stage-surface: #1f2328;
+    --stage-accent: #0d9f4f;
+    --stage-on-accent: #ffffff;
+
+    --text: var(--stage-fg);
+    --animate-bg: rgba(255, 255, 255, 0.04);
+    --animate-bg-tint: transparent;
+    --animate-bg-hover: rgba(255, 255, 255, 0.06);
+    --animate-bg-pressed: rgba(255, 255, 255, 0.08);
+    --animate-text: #e3e3e3;
+    --animate-text-disabled: rgba(227, 227, 227, 0.5);
+    --muted: var(--stage-muted);
+    --material-bg: var(--stage-surface);
+    --p14-skeleton-color: rgba(255, 255, 255, 0.08);
+}
+
+/* 1. Scoped Prototype Library Card ([data-proto-card]) */
+:where(.card[data-proto-card]),
+:where(.card[data-proto-card]) *,
+:where(.card[data-proto-card]) *::before,
+:where(.card[data-proto-card]) *::after {
+    box-sizing: border-box;
+}
+
+.card[data-proto-card] {
+    position: relative;
+    width: 296px;
+    height: 260px;
+    color: var(--text);
+    font-family: var(--font-sans);
+}
+
+.card[data-proto-card] > .card-stage {
+    inset: 0;
+    width: auto;
+    height: auto;
+    max-width: none;
+    border-radius: 0;
+}
+
+.card[data-proto-card] > .card-stage::after {
+    content: none;
+}
+
+.card-stage {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    width: 296px;
+    max-width: calc(100% - 24px);
+    height: 260px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--stage-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px var(--stage-border);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.dark-mode .card-stage,
+html[data-theme="dark"] .card-stage {
+    background: var(--stage-bg);
+}
+
+.dark-mode .card-stage::after,
+html[data-theme="dark"] .card-stage::after {
+    box-shadow: inset 0 0 0 1px var(--stage-border);
+}
+
+.btn-animate {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    height: 34px;
+    padding: 6px 14px;
+    border: 1px solid var(--stage-accent);
+    border-radius: 4px;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 12.5px;
+    line-height: 16px;
+    color: var(--stage-accent);
+    background-color: var(--stage-surface);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    z-index: 5;
+    flex-shrink: 0;
+}
+
+.btn-animate:hover {
+    background-color: rgba(13, 159, 79, 0.08);
+    color: var(--stage-accent);
+}
+
+.dark-mode .btn-animate,
+html[data-theme="dark"] .btn-animate {
+    background-color: var(--stage-surface);
+    color: #34d399;
+    border-color: var(--stage-accent);
+}
+
+.dark-mode .btn-animate:hover,
+html[data-theme="dark"] .btn-animate:hover {
+    background-color: rgba(13, 159, 79, 0.18);
+    color: #ffffff;
+}
+
+.btn-animate:focus-visible {
+    outline: 2px solid var(--stage-accent);
+    outline-offset: 2px;
+}
+
+.stage-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 56px;
+}
+
+.p14-stage-inner {
+    padding-bottom: 0;
+}
+
+/* 2. Standalone p14-card & Universal [data-proto-skeleton] Component */
+.p14-card {
+    position: relative;
+    width: 256px;
+    max-width: 100%;
+    height: 56px;
+    border-radius: 4px;
+    background: var(--material-bg);
+    border: 1px solid var(--stage-border);
+    box-shadow: none !important;
+    overflow: hidden;
+}
+
+.p14-card .p14-skeleton,
+.p14-card .p14-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.p14-skeleton {
+    gap: 6px;
+    z-index: 3;
+    opacity: 1;
+    filter: blur(0);
+    pointer-events: none;
+    transition: opacity var(--p14-reveal-dur) var(--p14-reveal-ease),
+                filter  var(--p14-reveal-dur) var(--p14-reveal-ease);
+    transition-delay: 0ms;
+}
+
+.p14-content {
+    z-index: 2;
+    opacity: 0;
+    filter: blur(var(--p14-reveal-blur));
+    transition: opacity var(--p14-reveal-dur) var(--p14-reveal-ease),
+                filter  var(--p14-reveal-dur) var(--p14-reveal-ease);
+    transition-delay: 0ms;
+}
+
+.p14-skeleton .p14-sk-avatar,
+.p14-skeleton .p14-sk-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--p14-skeleton-color);
+    flex: none;
+}
+
+.p14-skeleton .p14-sk-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-left: 4px;
+    flex: 1;
+}
+
+.p14-skeleton .p14-sk-name,
+.p14-skeleton .p14-sk-email,
+.p14-skeleton .p14-sk-bar,
+.p14-skeleton .p14-sk-block {
+    height: 12px;
+    border-radius: 4px;
+    background: var(--p14-skeleton-color);
+}
+
+.p14-skeleton .p14-sk-name {
+    width: 100px;
+}
+
+.p14-skeleton .p14-sk-email {
+    width: 131px;
+}
+
+.p14-skeleton.is-pulsing .p14-sk-avatar,
+.p14-skeleton.is-pulsing .p14-sk-circle,
+.p14-skeleton.is-pulsing .p14-sk-name,
+.p14-skeleton.is-pulsing .p14-sk-email,
+.p14-skeleton.is-pulsing .p14-sk-bar,
+.p14-skeleton.is-pulsing .p14-sk-block {
+    animation: p14-pulse var(--p14-pulse-dur) ease-in-out var(--p14-pulse-count);
+}
+
+[data-proto-skeleton].is-resetting > .p14-skeleton,
+[data-proto-skeleton].is-resetting > .p14-content,
+.p14-card.is-resetting .p14-skeleton,
+.p14-card.is-resetting .p14-content {
+    transition: none !important;
+}
+
+.p14-content .p14-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex: none;
+}
+
+.p14-content .p14-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.p14-content .p14-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 16px;
+}
+
+.p14-content .p14-email {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 16px;
+}
+
+[data-proto-skeleton].is-revealed > .p14-skeleton,
+.p14-card.is-revealed .p14-skeleton {
+    opacity: 0;
+    filter: blur(var(--p14-reveal-blur));
+    pointer-events: none;
+}
+
+[data-proto-skeleton].is-revealed > .p14-content,
+.p14-card.is-revealed .p14-content {
+    opacity: 1;
+    filter: blur(0);
+}
+
+/* 3. Universal Surface Adaptation (Zero-DOM-Reparenting for All Cards, Boxes, Charts, Tables & Panels) */
+.p14-surface-host {
+    position: relative !important;
+}
+
+.small-box.p14-surface-host,
+.info-box.p14-surface-host,
+.dana-compare-box.p14-surface-host,
+.exec-kpi-card.p14-surface-host,
+.insight-pill.p14-surface-host,
+.metric-item.p14-surface-host,
+.metric-box.p14-surface-host {
+    overflow: hidden !important;
+}
+
+.p14-surface-host > .p14-skeleton {
+    position: absolute;
+    inset: 0;
+    background: var(--stage-surface);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px 18px;
+    gap: 10px;
+    z-index: 15;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.card.p14-surface-host > .p14-skeleton,
+.flat-card.p14-surface-host > .p14-skeleton,
+.doctor-card.p14-surface-host > .p14-skeleton {
+    justify-content: flex-start;
+    padding: 18px 20px;
+    gap: 14px;
+}
+
+/* Direct children (except .p14-skeleton) receive the exact p14-content blur & opacity reveal transition
+   without breaking any existing `.small-box > .inner` or `.small-box.bg-* > .icon` direct-child CSS rules */
+.p14-surface-host > *:not(.p14-skeleton) {
+    opacity: 0;
+    filter: blur(var(--p14-reveal-blur));
+    transition: opacity var(--p14-reveal-dur) var(--p14-reveal-ease),
+                filter  var(--p14-reveal-dur) var(--p14-reveal-ease);
+    transition-delay: 0ms;
+}
+
+.p14-surface-host.is-resetting > *:not(.p14-skeleton),
+.p14-surface-host.is-resetting > .p14-skeleton {
+    transition: none !important;
+}
+
+.p14-surface-host.is-revealed > *:not(.p14-skeleton) {
+    opacity: 1;
+    filter: blur(0);
+}
+
+/* Universal Modal & Tab Pane Reveal Remix (400ms ease-in-out, blur 2px -> 0) */
+.modal.fade .modal-dialog .modal-content {
+    opacity: 0;
+    filter: blur(var(--p14-reveal-blur));
+    transition: opacity var(--p14-reveal-dur) var(--p14-reveal-ease),
+                filter  var(--p14-reveal-dur) var(--p14-reveal-ease);
+}
+
+.modal.show .modal-dialog .modal-content {
+    opacity: 1;
+    filter: blur(0);
+}
+
+.tab-content > .tab-pane {
+    transition: opacity var(--p14-reveal-dur) var(--p14-reveal-ease),
+                filter  var(--p14-reveal-dur) var(--p14-reveal-ease);
+}
+
+.tab-content > .tab-pane.active {
+    animation: p14-direct-reveal var(--p14-reveal-dur) var(--p14-reveal-ease) forwards;
+}
+
+@keyframes p14-direct-reveal {
+    0% {
+        opacity: 0;
+        filter: blur(var(--p14-reveal-blur));
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+@media (max-width: 639px) {
+    .card-stage {
+        right: 12px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .p14-skeleton,
+    .p14-content,
+    [data-proto-skeleton] > .p14-skeleton,
+    [data-proto-skeleton] > .p14-content,
+    .p14-surface-host > *:not(.p14-skeleton) {
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+    }
+    .p14-skeleton.is-pulsing .p14-sk-avatar,
+    .p14-skeleton.is-pulsing .p14-sk-circle,
+    .p14-skeleton.is-pulsing .p14-sk-name,
+    .p14-skeleton.is-pulsing .p14-sk-email,
+    .p14-skeleton.is-pulsing .p14-sk-bar,
+    .p14-skeleton.is-pulsing .p14-sk-block {
+        animation: none !important;
+    }
+}
+
+@keyframes p14-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: var(--p14-pulse-min); }
 }
